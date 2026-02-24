@@ -76,7 +76,7 @@ export default function AOMCPanel({ controls }: AOMCPanelProps) {
                   animate={{ scale: 1 }}
                   className="text-green-400 text-xs flex-shrink-0"
                 >
-                  \u2713
+                  {'\u2713'}
                 </motion.div>
               )}
             </motion.div>

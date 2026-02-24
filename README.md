@@ -9,6 +9,32 @@ The demo walks through two scenarios:
 1. **Catastrophic Cascade** — A single rogue agent exploits six missing security controls to achieve total enterprise collapse
 2. **Layered Defense** — The same attack, blocked at every stage by the AOMC (Agentic Overlay Management & Control) plane
 
+## Demo Preview
+
+![Demo Walkthrough](screenshots/demo-walkthrough.gif)
+
+### Title Slide
+
+![Title Slide](screenshots/01-title-slide.gif)
+
+### Scenario 1: Catastrophic Cascade
+
+Rogue agent joins the trusted mesh, exfiltrates data, abuses tools, and cascades through the enterprise — all six security controls are missing.
+
+![Catastrophic Cascade](screenshots/02-catastrophic-cascade.gif)
+
+### Scenario 2: Layered Defense
+
+The AOMC control plane activates each of the six security controls, blocking the same attack at every stage. Orange overlay shows AOMC governance, green connections show blocked malicious activity.
+
+![Layered Defense](screenshots/03-layered-defense.gif)
+
+### Protected Outcome — Audit Trail
+
+All six controls active, tamper-evident audit trail generated, every malicious action REJECTED or BLOCKED.
+
+![Protected Outcome](screenshots/04-protected-outcome.gif)
+
 ## The Six AOMC Controls
 
 | # | Control | Poll % | MAESTRO Layer |
@@ -55,6 +81,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. Press **F**
 
 ```
 ├── demo.py                     # Terminal-based demo (standalone)
+├── screenshots/                # Demo screenshots for README
 ├── web-demo/                   # Conference-stage graphical demo
 │   ├── app/
 │   │   ├── layout.tsx          # Root layout, dark theme, fonts
