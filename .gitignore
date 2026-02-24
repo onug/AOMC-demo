@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Next.js build output
+web-demo/.next/
+web-demo/out/
+
+# Python
+__pycache__/
+*.pyc
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# Debug logs
+npm-debug.log*
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
