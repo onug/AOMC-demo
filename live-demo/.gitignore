@@ -1,0 +1,14 @@
+# Dependencies
+dashboard/node_modules/
+dashboard/.next/
+dashboard/out/
+
+# Generated certs
+certs/ca/
+certs/agents/
+
+# Docker volumes
+pgdata/
+
+# Environment overrides (keep .env in git for defaults)
+.env.local

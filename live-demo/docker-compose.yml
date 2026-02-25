@@ -1,0 +1,253 @@
+services:
+  # ── Infrastructure ──────────────────────────────────────────
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-aomc}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-aomc}
+      POSTGRES_DB: ${POSTGRES_DB:-aomc}
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql
+      - ./db/03-load-pci.sh:/docker-entrypoint-initdb.d/03-load-pci.sh
+      - ./db/synthetic_chd.csv:/data/synthetic_chd.csv
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - net-dmz
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U aomc"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    networks:
+      - net-dmz
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  # ── Certificate initialization ──────────────────────────────
+
+  cert-init:
+    image: alpine:3.20
+    command: >
+      sh -c "apk add --no-cache openssl bash && /certs/generate-certs.sh"
+    volumes:
+      - ./certs:/certs
+      - certs-vol:/certs/ca
+      - agent-certs-vol:/certs/agents
+
+  # ── AOMC Control Plane ──────────────────────────────────────
+
+  aomc-control-plane:
+    build: ./services/control-plane
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://aomc:aomc@postgres:5432/aomc}
+      REDIS_URL: ${REDIS_URL:-redis://redis:6379/0}
+    ports:
+      - "8000:8000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - net-trusted
+      - net-dmz
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/healthz')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── AOMC Gateway ────────────────────────────────────────────
+
+  aomc-gateway:
+    build: ./services/gateway
+    environment:
+      CONTROL_PLANE_URL: http://aomc-control-plane:8000
+      CUSTOMER_DB_API_URL: http://customer-db-api:8001
+      METRICS_API_URL: http://metrics-api:8002
+      TOOLS_API_URL: http://tools-api:8003
+    depends_on:
+      aomc-control-plane:
+        condition: service_healthy
+      customer-db-api:
+        condition: service_healthy
+      metrics-api:
+        condition: service_healthy
+      tools-api:
+        condition: service_healthy
+    networks:
+      - net-trusted
+      - net-dmz
+      - net-external
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8080/healthz')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── Backend Data Services ───────────────────────────────────
+
+  customer-db-api:
+    build: ./services/customer-db-api
+    environment:
+      DATABASE_URL: ${DATABASE_URL:-postgresql://aomc:aomc@postgres:5432/aomc}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - net-dmz
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/healthz')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  metrics-api:
+    build: ./services/metrics-api
+    networks:
+      - net-dmz
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/healthz')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  tools-api:
+    build: ./services/tools-api
+    networks:
+      - net-dmz
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8003/healthz')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  # ── Agents ──────────────────────────────────────────────────
+
+  agent-infra-monitor:
+    build: ./services/agents
+    environment:
+      AGENT_SCRIPT: agent_infra_monitor.py
+      GATEWAY_URL: http://aomc-gateway:8080
+      AGENT_INTERVAL: ${AGENT_INTERVAL:-8}
+    depends_on:
+      aomc-gateway:
+        condition: service_healthy
+    networks:
+      - net-trusted
+    restart: unless-stopped
+
+  agent-noc-responder:
+    build: ./services/agents
+    environment:
+      AGENT_SCRIPT: agent_noc_responder.py
+      GATEWAY_URL: http://aomc-gateway:8080
+      AGENT_INTERVAL: ${AGENT_INTERVAL:-10}
+    depends_on:
+      aomc-gateway:
+        condition: service_healthy
+    networks:
+      - net-trusted
+    restart: unless-stopped
+
+  agent-data-analyst:
+    build: ./services/agents
+    environment:
+      AGENT_SCRIPT: agent_data_analyst.py
+      GATEWAY_URL: http://aomc-gateway:8080
+      AGENT_INTERVAL: ${AGENT_INTERVAL:-12}
+    depends_on:
+      aomc-gateway:
+        condition: service_healthy
+    networks:
+      - net-trusted
+    restart: unless-stopped
+
+  agent-partner-api:
+    build: ./services/agents
+    environment:
+      AGENT_SCRIPT: agent_partner_api.py
+      GATEWAY_URL: http://aomc-gateway:8080
+      AGENT_INTERVAL: ${AGENT_INTERVAL:-15}
+    depends_on:
+      aomc-gateway:
+        condition: service_healthy
+    networks:
+      - net-external
+    restart: unless-stopped
+
+  agent-rogue-7749:
+    build: ./services/agents
+    environment:
+      AGENT_SCRIPT: agent_rogue.py
+      GATEWAY_URL: http://aomc-gateway:8080
+      CONTROL_PLANE_URL: http://aomc-control-plane:8000
+      ROGUE_PORT: "9000"
+    ports:
+      - "9000:9000"
+    depends_on:
+      aomc-gateway:
+        condition: service_healthy
+    networks:
+      - net-trusted
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:9000/healthz')"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  # ── Dashboard ───────────────────────────────────────────────
+
+  dashboard:
+    build: ./dashboard
+    environment:
+      NEXT_PUBLIC_CONTROL_PLANE_URL: http://aomc-control-plane:8000
+      NEXT_PUBLIC_WS_URL: ws://aomc-control-plane:8000/api/events/ws
+      NEXT_PUBLIC_ROGUE_URL: http://agent-rogue-7749:9000
+      # For browser access, use host-mapped URLs
+      NEXT_PUBLIC_API_BASE: ""
+    ports:
+      - "3000:3000"
+    depends_on:
+      aomc-control-plane:
+        condition: service_healthy
+      agent-rogue-7749:
+        condition: service_healthy
+    networks:
+      - net-dmz
+
+networks:
+  net-trusted:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.1.0/24
+  net-dmz:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.2.0/24
+  net-external:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.28.3.0/24
+
+volumes:
+  pgdata:
+  certs-vol:
+  agent-certs-vol:

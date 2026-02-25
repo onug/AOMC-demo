@@ -2,9 +2,15 @@
 
 **AI Networking Summit 2026 — ONUG Agentic AI Overlay Working Group**
 
-A live demo showcasing six mandatory security controls for enterprise agentic AI systems. Two versions: a terminal-based Python script and a conference-stage graphical web application.
+Three implementations of a live demo showcasing six mandatory security controls for enterprise agentic AI systems. Each version targets a different presentation context — from quick terminal walkthroughs to fully containerized infrastructure with real agent traffic.
 
-The demo walks through two scenarios:
+| Demo | Location | Best For |
+|------|----------|----------|
+| [Terminal Demo](#terminal-demo) | `demo.py` | Developer walkthroughs, quick demos |
+| [Web Demo](#web-demo) | `web-demo/` | Conference stage, large screens |
+| [Live Demo](#live-infrastructure-demo) | `live-demo/` | Hands-on infrastructure demos |
+
+All three walk through the same two scenarios:
 
 1. **Catastrophic Cascade** — A single rogue agent exploits six missing security controls to achieve total enterprise collapse
 2. **Layered Defense** — The same attack, blocked at every stage by the AOMC (Agentic Overlay Management & Control) plane
@@ -48,15 +54,15 @@ All six controls active, tamper-evident audit trail generated, every malicious a
 
 ## Quick Start
 
-### Terminal Demo (Python)
+### Terminal Demo
 
 ```bash
 python3 demo.py
 ```
 
-Requires Python 3.7+. No external dependencies.
+Requires Python 3.7+. No external dependencies. [Full documentation](docs/terminal-demo.md)
 
-### Web Demo (Next.js)
+### Web Demo
 
 ```bash
 cd web-demo
@@ -64,7 +70,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser. Press **F** for fullscreen.
+Open [http://localhost:3000](http://localhost:3000). Press **F** for fullscreen. [Full documentation](docs/web-demo.md)
 
 #### Keyboard Controls
 
@@ -77,41 +83,81 @@ Open [http://localhost:3000](http://localhost:3000) in your browser. Press **F**
 | `1` | Jump to Scenario 1 |
 | `2` | Jump to Scenario 2 |
 
+### Live Infrastructure Demo
+
+```bash
+cd live-demo
+make up
+```
+
+Dashboard at [http://localhost:3000](http://localhost:3000). [Full documentation](docs/live-demo.md)
+
+#### Makefile Controls
+
+| Command | Action |
+|---------|--------|
+| `make up` | Start all 12 services |
+| `make attack` | Launch rogue agent 6-phase attack |
+| `make stop` | Stop attack mid-sequence |
+| `make controls-on` | Enable all 6 AOMC controls |
+| `make controls-off` | Disable all 6 AOMC controls |
+| `make reset` | Reset state (controls, quarantine, audit) |
+| `make clean` | Stop + wipe database volumes |
+| `make logs` | Tail all service logs |
+| `make help` | Show all targets |
+
 ## Project Structure
 
 ```
-├── demo.py                     # Terminal-based demo (standalone)
-├── screenshots/                # Demo screenshots for README
-├── web-demo/                   # Conference-stage graphical demo
-│   ├── app/
-│   │   ├── layout.tsx          # Root layout, dark theme, fonts
-│   │   ├── page.tsx            # Entry point
-│   │   └── globals.css         # Tailwind + custom animations
-│   ├── components/
-│   │   ├── DemoStage.tsx       # Main orchestrator (state, keyboard)
-│   │   ├── NetworkTopology.tsx # SVG network visualization
-│   │   ├── AOMCPanel.tsx       # Six-control toggle panel
-│   │   ├── EventFeed.tsx       # Scrolling event log
-│   │   ├── BlastRadius.tsx     # Damage metrics with counters
-│   │   ├── AuditTrail.tsx      # Tamper-evident audit table
-│   │   ├── ViolationOverlay.tsx# Red flash + shake on violations
-│   │   ├── BlockedOverlay.tsx  # Green shield on blocks
-│   │   ├── StepIndicator.tsx   # Bottom progress bar
-│   │   └── TitleSlide.tsx      # Full-screen title cards
-│   └── lib/
-│       ├── types.ts            # TypeScript interfaces
-│       ├── data.ts             # Agents, customers, tools, controls
-│       └── steps.ts            # All ~44 demo steps (the "script")
-└── CLAUDE.md                   # AI assistant instructions
+├── demo.py                         # Terminal demo (standalone Python)
+├── screenshots/                    # Demo screenshots for README
+├── docs/
+│   ├── aomc-reference-architecture.md  # Overlay architecture and components
+│   ├── enterprise-requirements.md      # Six controls with poll data
+│   ├── scaling-and-deployment.md       # Deployment strategies and recommendations
+│   ├── use-cases.md                    # Enterprise use cases from community
+│   ├── security-standards.md           # NIST + MAESTRO framework mappings
+│   ├── terminal-demo.md               # Terminal demo documentation
+│   ├── web-demo.md                    # Web demo documentation
+│   └── live-demo.md                   # Live infrastructure demo documentation
+├── web-demo/                       # Conference-stage graphical demo (Next.js)
+│   ├── app/                        # Layout, page, global CSS
+│   ├── components/                 # DemoStage, NetworkTopology, AOMCPanel, etc.
+│   └── lib/                        # Types, data, steps (the "script")
+├── live-demo/                      # Dockerized infrastructure demo
+│   ├── dashboard/                  # Real-time Next.js dashboard
+│   │   ├── components/             # DashboardShell, BlastRadius, EventFeed, etc.
+│   │   └── lib/                    # Types, API client, WebSocket, data
+│   ├── db/
+│   │   ├── init.sql                # Database schema
+│   │   ├── seed.sql                # Agent registry, customers, tool permissions
+│   │   ├── 03-load-pci.sh          # Bulk-loads 100K PCI cardholder records
+│   │   └── synthetic_chd.csv       # 100K synthetic cardholder records
+│   ├── services/
+│   │   ├── control-plane/          # AOMC Control Plane (FastAPI, WebSocket)
+│   │   ├── gateway/                # Enforcement gateway + DLP scanner
+│   │   ├── customer-db-api/        # PII + PCI data endpoints
+│   │   ├── metrics-api/            # Metrics service
+│   │   ├── tools-api/              # Tool invocation service
+│   │   └── agents/                 # 4 legitimate + 1 rogue agent
+│   ├── certs/                      # mTLS certificate generation
+│   ├── docker-compose.yml          # 12 services, 3 trust-domain networks
+│   └── Makefile                    # Demo control targets
+└── CLAUDE.md                       # AI assistant instructions
 ```
 
-## Web Demo Tech Stack
+## Architecture Comparison
 
-- **Next.js 16** (App Router, static export)
-- **TypeScript**
-- **Tailwind CSS v4**
-- **Framer Motion** for animations
-- No other runtime dependencies
+| Aspect | Terminal | Web | Live |
+|--------|----------|-----|------|
+| Runtime | Python 3.7+ | Node.js + browser | Docker Compose |
+| State | In-memory Python object | useReducer (replay from step 0) | PostgreSQL + Redis |
+| Agents | Simulated in script | Simulated in steps array | Real HTTP microservices |
+| Data | 5 PII records (hardcoded) | 5 PII records (hardcoded) | 5 PII + 100K PCI (database) |
+| Pacing | `time.sleep()` + Enter | Space/arrow keys | Real-time (operator-triggered) |
+| Controls | Toggle in code | Step-driven toggles | API calls / dashboard buttons |
+| Networking | None | None | 3 Docker bridge networks |
+| Dependencies | None | npm (Next.js, Framer Motion) | Docker, docker compose |
 
 ## Architecture Reference
 
@@ -122,6 +168,18 @@ The demo visualizes the ONUG reference architecture:
 - **Rogue agent** with pulsing red glow and skull icon
 - **Connection types**: Blue (A2A), Yellow (agent-to-data), Red (malicious), Green (blocked)
 - **AOMC overlay** (orange) wraps the topology when controls are active
+
+## ONUG Working Group Papers
+
+The demos are based on two papers produced by the ONUG Agentic AI Overlay Working Group: *Part A: Agentic AI Overlay Architecture* and *Part B: Scaling, Deployment, and Operationalization Strategies*. The full content is organized topically in `docs/`:
+
+| Document | Description |
+|----------|-------------|
+| [Reference Architecture](docs/aomc-reference-architecture.md) | Overlay architecture, trust domains, AOMC ten-point reference, component descriptions, operational flows |
+| [Enterprise Requirements](docs/enterprise-requirements.md) | The six controls with poll data, MAESTRO mappings, and single- vs. multi-domain requirements |
+| [Scaling & Deployment](docs/scaling-and-deployment.md) | Key observations, strategic recommendations, operational targets, deployment patterns |
+| [Use Cases](docs/use-cases.md) | Initial use cases and top 10 from community poll |
+| [Security Standards](docs/security-standards.md) | NIST SP 800-53 AI Control Overlays, MAESTRO seven-layer mapping, integration guidance |
 
 ## Frameworks
 

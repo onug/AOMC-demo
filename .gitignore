@@ -2,8 +2,8 @@
 node_modules/
 
 # Next.js build output
-web-demo/.next/
-web-demo/out/
+.next/
+out/
 
 # Python
 __pycache__/
@@ -29,3 +29,9 @@ npm-debug.log*
 # TypeScript
 *.tsbuildinfo
 next-env.d.ts
+
+# Generated TLS certs (keep generate script, ignore output)
+live-demo/certs/ca/*.pem
+live-demo/certs/ca/*.srl
+live-demo/certs/agents/*.pem
+live-demo/certs/agents/*.csr
