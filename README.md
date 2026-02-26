@@ -17,40 +17,28 @@ All three walk through the same two scenarios:
 
 ## Demo Preview
 
-![Demo Walkthrough](screenshots/demo-walkthrough.gif)
+### Web Demo — Conference Presentation
 
-### Title Slide
+Step-driven presentation with keyboard controls. SVG topology with arrowheaded edges, control enforcement badges, compromised node visualization, and real-time damage metrics.
 
-![Title Slide](screenshots/01-title-slide.gif)
+![Web Demo — Scenario 1: Catastrophic Cascade](screenshots/web-demo.png)
 
-### Scenario 1: Catastrophic Cascade
+### Live Demo — Real Infrastructure
 
-Rogue agent joins the trusted mesh, exfiltrates data, abuses tools, and cascades through the enterprise — all six security controls are missing.
+12 Dockerized microservices with real HTTP agent traffic, WebSocket event streaming, tamper-evident audit trail, and automated attack sequencing.
 
-![Catastrophic Cascade](screenshots/02-catastrophic-cascade.gif)
-
-### Scenario 2: Layered Defense
-
-The AOMC control plane activates each of the six security controls, blocking the same attack at every stage. Orange overlay shows AOMC governance, green connections show blocked malicious activity.
-
-![Layered Defense](screenshots/03-layered-defense.gif)
-
-### Protected Outcome — Audit Trail
-
-All six controls active, tamper-evident audit trail generated, every malicious action REJECTED or BLOCKED.
-
-![Protected Outcome](screenshots/04-protected-outcome.gif)
+![Live Demo — Attack in Progress](screenshots/live-demo.png)
 
 ## The Six AOMC Controls
 
 | # | Control | Poll % | MAESTRO Layer |
 |---|---------|--------|---------------|
-| 1 | Agent Identity & Attestation | 78% | Layer 1 |
-| 2 | Runtime Monitoring & Rogue Detection | 65% | Layer 4 |
-| 3 | Data Guardrails (Input/Output/Residency) | 92% | Layer 3 |
-| 4 | Zero-Trust Enforcement | 67% | Layer 2 |
-| 5 | Secure Orchestration & Tool Authorization | 71% | Layer 5 |
-| 6 | Agent Autonomy Governance | 56% | Layer 6 |
+| 1 | Agent Identity & Attestation | 78% | Identity & Zero Trust |
+| 2 | Runtime Monitoring & Rogue Detection | 65% | Rogue Agent Detection |
+| 3 | Data Guardrails (Input/Output/Residency) | 92% | Data Exfil Prevention |
+| 4 | Zero-Trust Enforcement | 67% | Cross-Domain Trust |
+| 5 | Secure Orchestration & Tool Authorization | 71% | Access Control |
+| 6 | Agent Autonomy Governance | 56% | Governance & Audit |
 
 ## Quick Start
 
@@ -153,7 +141,7 @@ Dashboard at [http://localhost:3000](http://localhost:3000). [Full documentation
 | Runtime | Python 3.7+ | Node.js + browser | Docker Compose |
 | State | In-memory Python object | useReducer (replay from step 0) | PostgreSQL + Redis |
 | Agents | Simulated in script | Simulated in steps array | Real HTTP microservices |
-| Data | 5 PII records (hardcoded) | 5 PII records (hardcoded) | 5 PII + 100K PCI (database) |
+| Data | 5 PII + 100K PCI (narrative) | 5 PII + 100K PCI (hardcoded) | 5 PII + 100K PCI (database) |
 | Pacing | `time.sleep()` + Enter | Space/arrow keys | Real-time (operator-triggered) |
 | Controls | Toggle in code | Step-driven toggles | API calls / dashboard buttons |
 | Networking | None | None | 3 Docker bridge networks |

@@ -2,11 +2,15 @@
 
 import { motion, AnimatePresence } from 'framer-motion';
 import { TopologyState, ControlKey } from '@/lib/types';
+import { CONTROL_BADGE_POSITIONS, ControlBadgePosition } from '@/lib/data';
 
 interface NetworkTopologyProps {
   topology: TopologyState;
   aomcActive: boolean;
   quarantined: Set<string>;
+  compromised: Map<string, string>;
+  controls: Record<ControlKey, boolean>;
+  enforcingControl: ControlKey | null;
 }
 
 // Trust domain rectangles
@@ -63,6 +67,30 @@ function edgeAnimClass(type: string): string {
   return 'animate-dash';
 }
 
+function nodeOffset(type: string): number {
+  switch (type) {
+    case 'agent': case 'rogue': return 24;
+    case 'datastore': return 16;
+    case 'tool': return 14;
+    default: return 16;
+  }
+}
+
+function shortenLine(x1: number, y1: number, x2: number, y2: number, fromOffset: number, toOffset: number) {
+  const dx = x2 - x1;
+  const dy = y2 - y1;
+  const len = Math.sqrt(dx * dx + dy * dy);
+  if (len === 0) return { x1, y1, x2, y2 };
+  const ux = dx / len;
+  const uy = dy / len;
+  return {
+    x1: x1 + ux * fromOffset,
+    y1: y1 + uy * fromOffset,
+    x2: x2 - ux * toOffset,
+    y2: y2 - uy * toOffset,
+  };
+}
+
 function NodeIcon({ type, x, y }: { type: string; x: number; y: number }) {
   const size = 9;
   switch (type) {
@@ -90,12 +118,68 @@ function NodeIcon({ type, x, y }: { type: string; x: number; y: number }) {
   }
 }
 
-export default function NetworkTopology({ topology, aomcActive, quarantined }: NetworkTopologyProps) {
+function ControlBadge({ badge, active, enforcing }: { badge: ControlBadgePosition; active: boolean; enforcing: boolean }) {
+  const w = 56;
+  const h = 18;
+  const circleR = 7;
+
+  const bgFill = enforcing ? '#15803d' : active ? '#15803d' : '#374151';
+  const borderColor = enforcing ? '#22c55e' : active ? '#22c55e' : '#4b5563';
+  const textColor = active || enforcing ? '#ffffff' : '#9ca3af';
+  const opacity = active || enforcing ? 1 : 0.6;
+
+  return (
+    <g opacity={opacity}>
+      {/* Pulse ring when enforcing */}
+      {enforcing && (
+        <motion.rect
+          x={badge.x - w / 2 - 3} y={badge.y - h / 2 - 3}
+          width={w + 6} height={h + 6} rx={11}
+          fill="none" stroke="#22c55e" strokeWidth={1.5}
+          animate={{ opacity: [0.8, 0.2, 0.8], scale: [1, 1.08, 1] }}
+          transition={{ duration: 1, repeat: Infinity }}
+          filter="url(#glow-green-strong)"
+        />
+      )}
+      {/* Pill background */}
+      <rect
+        x={badge.x - w / 2} y={badge.y - h / 2}
+        width={w} height={h} rx={9}
+        fill={bgFill} stroke={borderColor} strokeWidth={1}
+      />
+      {/* Number circle */}
+      <circle
+        cx={badge.x - w / 2 + circleR + 3} cy={badge.y}
+        r={circleR}
+        fill={enforcing ? '#22c55e' : active ? '#22c55e' : '#4b5563'}
+      />
+      <text
+        x={badge.x - w / 2 + circleR + 3} y={badge.y + 3.5}
+        textAnchor="middle" fill={active || enforcing ? '#ffffff' : '#d1d5db'}
+        fontSize={9} fontWeight="bold"
+        fontFamily="var(--font-mono), monospace"
+      >
+        {badge.number}
+      </text>
+      {/* Short label */}
+      <text
+        x={badge.x + 6} y={badge.y + 3.5}
+        textAnchor="middle" fill={textColor}
+        fontSize={8} fontWeight="bold"
+        fontFamily="var(--font-mono), monospace"
+      >
+        {badge.shortLabel}
+      </text>
+    </g>
+  );
+}
+
+export default function NetworkTopology({ topology, aomcActive, quarantined, compromised, controls, enforcingControl }: NetworkTopologyProps) {
   const nodeMap = new Map(topology.nodes.map(n => [n.id, n]));
 
   return (
     <div className="h-full w-full relative rounded-lg border border-gray-800 bg-gray-900/30 overflow-hidden">
-      <svg viewBox="0 0 920 660" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
+      <svg viewBox="0 0 920 680" className="w-full h-full" preserveAspectRatio="xMidYMid meet">
         <defs>
           {/* Glow filters */}
           <filter id="glow-red" x="-50%" y="-50%" width="200%" height="200%">
@@ -116,6 +200,25 @@ export default function NetworkTopology({ topology, aomcActive, quarantined }: N
             <feComposite in="color" in2="blur" operator="in" result="glow" />
             <feMerge><feMergeNode in="glow" /><feMergeNode in="SourceGraphic" /></feMerge>
           </filter>
+          <filter id="glow-green-strong" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="6" result="blur" />
+            <feFlood floodColor="#22c55e" floodOpacity="0.8" result="color" />
+            <feComposite in="color" in2="blur" operator="in" result="glow" />
+            <feMerge><feMergeNode in="glow" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          {/* Arrowhead markers for each edge color */}
+          <marker id="arrow-data" viewBox="0 0 10 6" refX="9" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 3 L 0 6 z" fill="#eab308" />
+          </marker>
+          <marker id="arrow-a2a" viewBox="0 0 10 6" refX="9" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 3 L 0 6 z" fill="#3b82f6" />
+          </marker>
+          <marker id="arrow-malicious" viewBox="0 0 10 6" refX="9" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 3 L 0 6 z" fill="#ef4444" />
+          </marker>
+          <marker id="arrow-blocked" viewBox="0 0 10 6" refX="9" refY="3" markerWidth="8" markerHeight="6" orient="auto">
+            <path d="M 0 0 L 10 3 L 0 6 z" fill="#22c55e" />
+          </marker>
         </defs>
 
         {/* Trust domain rectangles */}
@@ -152,6 +255,16 @@ export default function NetworkTopology({ topology, aomcActive, quarantined }: N
           )}
         </AnimatePresence>
 
+        {/* Control enforcement badges */}
+        {CONTROL_BADGE_POSITIONS.map(badge => (
+          <ControlBadge
+            key={badge.key}
+            badge={badge}
+            active={controls[badge.key]}
+            enforcing={enforcingControl === badge.key}
+          />
+        ))}
+
         {/* Edges */}
         <AnimatePresence>
           {topology.edges.filter(e => e.visible).map(edge => {
@@ -162,6 +275,13 @@ export default function NetworkTopology({ topology, aomcActive, quarantined }: N
             const stroke = edgeStroke(edge.type);
             const dash = edgeDash(edge.type);
             const width = edge.type === 'malicious' ? 2.5 : edge.type === 'blocked' ? 2 : 1.5;
+            const markerId = `arrow-${edge.type}`;
+
+            // Shorten line so arrowhead doesn't overlap nodes
+            const line = shortenLine(
+              fromNode.x, fromNode.y, toNode.x, toNode.y,
+              nodeOffset(fromNode.type), nodeOffset(toNode.type),
+            );
 
             return (
               <motion.g key={edge.id}
@@ -171,10 +291,11 @@ export default function NetworkTopology({ topology, aomcActive, quarantined }: N
                 transition={{ duration: 0.4 }}
               >
                 <line
-                  x1={fromNode.x} y1={fromNode.y}
-                  x2={toNode.x} y2={toNode.y}
+                  x1={line.x1} y1={line.y1}
+                  x2={line.x2} y2={line.y2}
                   stroke={stroke} strokeWidth={width}
                   strokeDasharray={dash}
+                  markerEnd={`url(#${markerId})`}
                   className={edge.animated ? edgeAnimClass(edge.type) : ''}
                   opacity={edge.type === 'blocked' ? 0.6 : 0.8}
                 />
@@ -217,9 +338,12 @@ export default function NetworkTopology({ topology, aomcActive, quarantined }: N
         <AnimatePresence>
           {topology.nodes.filter(n => n.visible).map(node => {
             const isQuarantined = quarantined.has(node.id);
-            const stroke = nodeStroke(node.type, isQuarantined);
-            const fill = nodeFill(node.type);
+            const isCompromised = compromised.has(node.id);
+            const compromiseLabel = compromised.get(node.id);
+            const stroke = isCompromised ? '#ef4444' : nodeStroke(node.type, isQuarantined);
+            const fill = isCompromised ? 'rgba(239,68,68,0.2)' : nodeFill(node.type);
             const isRogue = node.type === 'rogue';
+            const labelY = node.type === 'datastore' ? 22 : node.type === 'tool' ? 22 : 36;
 
             return (
               <motion.g
@@ -229,6 +353,17 @@ export default function NetworkTopology({ topology, aomcActive, quarantined }: N
                 exit={{ opacity: 0, scale: 0.5 }}
                 transition={{ duration: 0.4 }}
               >
+                {/* Compromised pulse ring (for non-rogue nodes) */}
+                {isCompromised && !isRogue && (
+                  <motion.circle
+                    cx={node.x} cy={node.y} r={28}
+                    fill="none" stroke="#ef4444" strokeWidth={1.5}
+                    animate={{ r: [28, 36, 28], opacity: [0.4, 0.7, 0.4] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                    filter="url(#glow-red)"
+                  />
+                )}
+
                 {/* Agent circle */}
                 {(node.type === 'agent' || node.type === 'rogue') && (
                   <>
@@ -243,7 +378,7 @@ export default function NetworkTopology({ topology, aomcActive, quarantined }: N
                     <circle
                       cx={node.x} cy={node.y} r={22}
                       fill={fill} stroke={stroke} strokeWidth={2}
-                      filter={isRogue ? 'url(#glow-red)' : 'url(#glow-blue)'}
+                      filter={isRogue || isCompromised ? 'url(#glow-red)' : 'url(#glow-blue)'}
                     />
                     <NodeIcon type={node.type} x={node.x} y={node.y} />
                     {!isRogue && (
@@ -256,22 +391,52 @@ export default function NetworkTopology({ topology, aomcActive, quarantined }: N
 
                 {/* Datastore cylinder icon */}
                 {node.type === 'datastore' && (
-                  <NodeIcon type="datastore" x={node.x} y={node.y} />
+                  <g filter={isCompromised ? 'url(#glow-red)' : undefined}>
+                    <NodeIcon type="datastore" x={node.x} y={node.y} />
+                  </g>
                 )}
 
                 {/* Tool hexagon */}
                 {node.type === 'tool' && (
-                  <NodeIcon type="tool" x={node.x} y={node.y} />
+                  <g filter={isCompromised ? 'url(#glow-red)' : undefined}>
+                    <NodeIcon type="tool" x={node.x} y={node.y} />
+                  </g>
                 )}
 
                 {/* Label */}
                 <text
-                  x={node.x} y={node.y + (node.type === 'datastore' ? 22 : node.type === 'tool' ? 22 : 36)}
-                  textAnchor="middle" fill="#9ca3af" fontSize={9}
+                  x={node.x} y={node.y + labelY}
+                  textAnchor="middle" fill={isCompromised ? '#ef4444' : '#9ca3af'} fontSize={9}
                   fontFamily="var(--font-mono), monospace"
                 >
                   {node.label}
                 </text>
+
+                {/* Compromise badge */}
+                {isCompromised && compromiseLabel && (
+                  <g>
+                    <rect
+                      x={node.x - compromiseLabel.length * 3.2}
+                      y={node.y + labelY + 4}
+                      width={compromiseLabel.length * 6.4}
+                      height={16}
+                      rx={3}
+                      fill="#ef4444"
+                      opacity={0.9}
+                    />
+                    <text
+                      x={node.x}
+                      y={node.y + labelY + 15}
+                      textAnchor="middle"
+                      fill="white"
+                      fontSize={8}
+                      fontWeight="bold"
+                      fontFamily="var(--font-mono), monospace"
+                    >
+                      {compromiseLabel}
+                    </text>
+                  </g>
+                )}
 
                 {/* Quarantined badge */}
                 {isQuarantined && (

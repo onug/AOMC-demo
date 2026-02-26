@@ -83,6 +83,7 @@ export interface TopologyChange {
 
 export interface DamageMetrics {
   recordsExfiltrated: number;
+  pciRecordsExfiltrated: number;
   toolsAbused: number;
   damageUSD: string;
   regulatoryFines: string;
@@ -112,6 +113,7 @@ export interface Step {
   auditEntries?: AuditEntry[];
   showAuditTrail?: boolean;
   contributors?: boolean;
+  compromiseNodes?: { nodeId: string; label: string }[];
 }
 
 export interface TopologyState {
@@ -128,6 +130,8 @@ export interface DemoState {
   topology: TopologyState;
   audit: AuditEntry[];
   quarantined: Set<string>;
+  compromised: Map<string, string>;
+  enforcingControl: ControlKey | null;
   activeViolation: { number: number; name: string; detail: string } | null;
   activeBlocked: { number: number; name: string; detail: string } | null;
 }

@@ -26,12 +26,12 @@ export default function ViolationOverlay({ visible, title, subtitle }: Violation
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             className="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
           >
-            <div className="bg-red-950/90 border-2 border-red-500 rounded-xl px-8 py-4 glow-red backdrop-blur-sm max-w-2xl">
-              <div className="flex items-center gap-3">
-                <span className="text-3xl">{'\u26a0\ufe0f'}</span>
+            <div className="bg-red-950/90 border-4 border-red-500 rounded-2xl px-12 py-8 glow-red backdrop-blur-sm max-w-4xl">
+              <div className="flex items-center gap-5">
+                <span className="text-6xl">{'\u26a0\ufe0f'}</span>
                 <div>
-                  <h3 className="text-red-400 font-bold text-lg">{title}</h3>
-                  {subtitle && <p className="text-red-300/80 text-sm mt-1">{subtitle}</p>}
+                  <h3 className="text-red-400 font-bold text-4xl">{title}</h3>
+                  {subtitle && <p className="text-red-300/80 text-xl mt-2">{subtitle}</p>}
                 </div>
               </div>
             </div>

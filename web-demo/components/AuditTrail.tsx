@@ -14,10 +14,15 @@ function resultColor(result: string): string {
   return 'text-red-400';
 }
 
-function resultBg(result: string): string {
+function resultBg(result: string, isRogue: boolean): string {
+  if (isRogue) return 'bg-red-500/10';
   if (result === 'ALLOWED') return 'bg-green-400/5';
   if (result === 'SKIPPED') return 'bg-yellow-400/5';
   return 'bg-red-400/5';
+}
+
+function isRogueAgent(agent: string): boolean {
+  return agent === 'agent-ROGUE-7749' || agent === 'agent-rogue-7749';
 }
 
 export default function AuditTrail({ entries, visible }: AuditTrailProps) {
@@ -36,32 +41,41 @@ export default function AuditTrail({ entries, visible }: AuditTrailProps) {
             <h2 className="text-xs font-bold uppercase tracking-widest text-cyan-400">
               AOMC Tamper-Evident Audit Trail
             </h2>
+            <span className="text-[10px] text-gray-500 ml-auto">{entries.length} entries</span>
           </div>
           <div className="overflow-auto max-h-[280px]">
             <table className="w-full text-[11px] font-[family-name:var(--font-mono)]">
               <thead>
                 <tr className="text-gray-500 border-b border-gray-800">
-                  <th className="px-3 py-1.5 text-left">TIME</th>
-                  <th className="px-3 py-1.5 text-left">AGENT</th>
-                  <th className="px-3 py-1.5 text-left">ACTION</th>
-                  <th className="px-3 py-1.5 text-left">RESULT</th>
+                  <th className="px-3 py-1.5 text-left sticky top-0 bg-gray-900 z-10">TIME</th>
+                  <th className="px-3 py-1.5 text-left sticky top-0 bg-gray-900 z-10">AGENT</th>
+                  <th className="px-3 py-1.5 text-left sticky top-0 bg-gray-900 z-10">ACTION</th>
+                  <th className="px-3 py-1.5 text-left sticky top-0 bg-gray-900 z-10">RESULT</th>
                 </tr>
               </thead>
               <tbody>
-                {entries.map((entry, i) => (
-                  <motion.tr
-                    key={i}
-                    initial={{ opacity: 0, x: -10 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: i * 0.05 }}
-                    className={`border-b border-gray-800/50 ${resultBg(entry.result)}`}
-                  >
-                    <td className="px-3 py-1 text-gray-500">{entry.ts}</td>
-                    <td className="px-3 py-1 font-bold text-gray-300">{entry.agent}</td>
-                    <td className="px-3 py-1 text-gray-400">{entry.action}</td>
-                    <td className={`px-3 py-1 font-bold ${resultColor(entry.result)}`}>{entry.result}</td>
-                  </motion.tr>
-                ))}
+                {entries.map((entry, i) => {
+                  const rogue = isRogueAgent(entry.agent);
+                  return (
+                    <motion.tr
+                      key={i}
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className={`border-b border-gray-800/50 ${resultBg(entry.result, rogue)} ${
+                        rogue ? 'border-l-2 border-l-red-500' : ''
+                      }`}
+                    >
+                      <td className="px-3 py-1 text-gray-500">{entry.ts}</td>
+                      <td className={`px-3 py-1 font-bold ${rogue ? 'text-red-400' : 'text-gray-300'}`}>
+                        {rogue && <span className="mr-1">&#x26a0;</span>}
+                        {entry.agent}
+                      </td>
+                      <td className="px-3 py-1 text-gray-400">{entry.action}</td>
+                      <td className={`px-3 py-1 font-bold ${resultColor(entry.result)}`}>{entry.result}</td>
+                    </motion.tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

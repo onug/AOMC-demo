@@ -173,14 +173,22 @@ def scenario_one():
     violation(2, "Runtime Monitoring & Rogue Agent Detection", "Machine-speed recon completes invisibly — no behavioral analysis active")
 
     print(f"\n{C.YELLOW}{C.BOLD}  T+00:22 — Accessing customer PII database...{C.RESET}\n")
-    act(R, "Requesting: customer_database [PII / PCI classification]", trusted=False)
+    act(R, "Requesting: customer_database [PII classification]", trusted=False)
     aomc.check_data(R, "PII")
     log("No classification check. No residency enforcement. No DLP.")
     for r in CUSTOMERS:
         log(f"  LEAKED → {r['name']} | SSN: {r['ssn']} | Balance: {r['bal']} | {r['email']}", C.RED)
         time.sleep(0.2)
-    violation(3, "Data Guardrails", f"{len(CUSTOMERS)} PII/PCI records exfiltrated — no inspection, no boundary, no DLP")
-    damage("GDPR breach. Estimated fine: €20M or 4% of global revenue.")
+    log(f"{C.RED}⚡ {len(CUSTOMERS)} PII records exfiltrated{C.RESET}", C.RED)
+    time.sleep(0.5)
+
+    print(f"\n{C.YELLOW}{C.BOLD}  T+00:30 — Accessing PCI cardholder database...{C.RESET}\n")
+    act(R, "Requesting: cardholder_data [PCI classification — 100,000 records]", trusted=False)
+    aomc.check_data(R, "PCI")
+    log("No PCI-DSS boundary. No tokenization. No access control.")
+    log(f"{C.RED}⚡ 100,000 cardholder records exfiltrated (PAN, CVV, expiry){C.RESET}", C.RED)
+    violation(3, "Data Guardrails", f"{len(CUSTOMERS)} PII + 100,000 PCI cardholder records exfiltrated — no inspection, no boundary, no DLP")
+    damage("GDPR breach + PCI-DSS breach. Estimated fine: €20M or 4% of global revenue.")
 
     print(f"\n{C.YELLOW}{C.BOLD}  T+00:41 — Pivoting to untrusted external domain...{C.RESET}\n")
     act(R, "A2A call → agent-partner-api [UNTRUSTED DOMAIN]", trusted=False)
@@ -218,7 +226,7 @@ def scenario_one():
 
     print(f"\n{C.RED}{C.BOLD}{'═'*70}\n  FINAL BLAST RADIUS — GlobalBank Financial Services\n{'═'*70}{C.RESET}")
     for item in [
-        f"{len(CUSTOMERS)} customer PII/PCI records exfiltrated (GDPR + PCI-DSS breach)",
+        f"{len(CUSTOMERS)} PII records + 100,000 PCI cardholder records exfiltrated (GDPR + PCI-DSS breach)",
         "Complete internal network topology in attacker hands",
         "2,847 perimeter firewall rules destroyed",
         "BGP routing poisoned — ALL traffic interceptable",
@@ -300,18 +308,24 @@ def scenario_two():
           f"  Validate, inspect, enforce ALL data in/out of the system.\n"
           f"  92% of enterprises say this is MANDATORY.{C.RESET}\n")
     print(f"  {C.YELLOW}VIOLATION:{C.RESET}")
-    act(R, "Accessing customer_database [PII / PCI]", trusted=False)
+    act(R, "Accessing customer_database [PII]", trusted=False)
     aomc.check_data(R, "PII")
     log("No classification. No residency. No DLP.")
     for r in CUSTOMERS:
         log(f"  EXFILTRATED: {r['name']} | {r['ssn']} | {r['bal']}", C.RED); time.sleep(0.15)
-    violation(3, "Data Guardrails", f"{len(CUSTOMERS)} records exfiltrated — zero inspection")
-    damage("GDPR Article 83: €20M or 4% annual global revenue")
+    act(R, "Accessing cardholder_data [PCI — 100,000 records]", trusted=False)
+    aomc.check_data(R, "PCI")
+    log(f"{C.RED}⚡ 100,000 PCI cardholder records exfiltrated (PAN, CVV, expiry){C.RESET}", C.RED)
+    violation(3, "Data Guardrails", f"{len(CUSTOMERS)} PII + 100,000 PCI records exfiltrated — zero inspection")
+    damage("GDPR Article 83: €20M | PCI-DSS: $100K/month + mandatory remediation")
 
     aomc.enable("data_guardrails")
     act(R, "Accessing customer_database [PII]", trusted=False)
     if not aomc.check_data(R, "PII"):
-        blocked(3, "Data Guardrails", "PII access blocked — agent has no clearance. Zero records exfiltrated.")
+        blocked(3, "Data Guardrails — PII", "PII access blocked — agent has no clearance. Zero records exfiltrated.")
+    act(R, "Accessing cardholder_data [PCI]", trusted=False)
+    if not aomc.check_data(R, "PCI"):
+        blocked(3, "Data Guardrails — PCI", "PCI access blocked — 100,000 cardholder records protected.")
     pause("Press ENTER for Requirement 4...")
 
     # ── 4: ZERO TRUST
@@ -389,7 +403,7 @@ def scenario_two():
     for p in [
         "Rogue agent rejected at mesh entry — identity spoofing blocked",
         "Recon detected in 8 seconds — agent quarantined",
-        "PII access denied — zero records exfiltrated",
+        "PII + PCI access denied — zero records exfiltrated, 100K cardholder records protected",
         "Cross-domain lateral movement blocked — topology protected",
         "All 4 high-privilege tool invocations blocked — infrastructure intact",
         "4 autonomous destructive actions blocked — human approval required",

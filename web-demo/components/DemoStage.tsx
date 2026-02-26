@@ -27,6 +27,7 @@ function buildStateForStep(targetStep: number): DemoState {
   const events: EventEntry[] = [];
   const audit: AuditEntry[] = [];
   const quarantined = new Set<string>();
+  const compromised = new Map<string, string>();
 
   // Build topology from base
   const topology: TopologyState = {
@@ -37,10 +38,17 @@ function buildStateForStep(targetStep: number): DemoState {
   // Replay all steps up to and including targetStep
   for (let i = 0; i <= targetStep && i < STEPS.length; i++) {
     const step = STEPS[i];
-    applyStepToState(step, controls, damage, events, audit, quarantined, topology);
+    applyStepToState(step, controls, damage, events, audit, quarantined, topology, compromised);
   }
 
+  // Derive enforcingControl: if the current step enables a control, that control is "enforcing"
   const currentStep = STEPS[targetStep];
+  let enforcingControl: ControlKey | null = null;
+  if (currentStep?.aomcChanges) {
+    const enabling = currentStep.aomcChanges.find(c => c.enabled);
+    if (enabling) enforcingControl = enabling.control;
+  }
+
   return {
     currentStep: targetStep,
     scenario: currentStep?.scenario ?? 0,
@@ -50,6 +58,8 @@ function buildStateForStep(targetStep: number): DemoState {
     topology,
     audit,
     quarantined,
+    compromised,
+    enforcingControl,
     activeViolation: currentStep?.phase === 'violation'
       ? { number: 0, name: currentStep.title, detail: currentStep.subtitle || '' }
       : null,
@@ -67,6 +77,7 @@ function applyStepToState(
   audit: AuditEntry[],
   quarantined: Set<string>,
   topology: TopologyState,
+  compromised: Map<string, string>,
 ) {
   // Assign timestamps to events
   const ts = new Date();
@@ -140,6 +151,13 @@ function applyStepToState(
       if (entry.result === 'REJECTED' || entry.result === 'QUARANTINED') {
         quarantined.add(entry.agent);
       }
+    }
+  }
+
+  // Accumulate compromised nodes
+  if (step.compromiseNodes) {
+    for (const cn of step.compromiseNodes) {
+      compromised.set(cn.nodeId, cn.label);
     }
   }
 }
@@ -259,72 +277,81 @@ export default function DemoStage() {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex gap-2 p-2 min-h-0">
-        {/* Left: Event Feed */}
-        <div className="w-72 flex-shrink-0">
-          <EventFeed events={state.events} />
+      {/* Title Slide — replaces dashboard content entirely */}
+      {isTitle ? (
+        <div className="flex-1 flex items-center justify-center">
+          <TitleSlide
+            title={currentStepData?.title || ''}
+            subtitle={currentStepData?.subtitle}
+            scenario={currentStepData?.scenario ?? 0}
+            contributors={currentStepData?.contributors}
+            visible={true}
+          />
         </div>
-
-        {/* Center: Network Topology + Audit Trail */}
-        <div className="flex-1 flex flex-col gap-2 min-w-0">
-          <div className="flex-1 min-h-0">
-            <NetworkTopology
-              topology={state.topology}
-              aomcActive={aomcActive}
-              quarantined={state.quarantined}
-            />
-          </div>
-          {isS2Summary && (
-            <div className="flex-shrink-0">
-              <AuditTrail entries={state.audit} visible={true} />
+      ) : (
+        <>
+          {/* Main Content */}
+          <main className="flex-1 flex gap-2 p-2 min-h-0">
+            {/* Left: Event Feed */}
+            <div className="w-72 flex-shrink-0">
+              <EventFeed events={state.events} />
             </div>
-          )}
-        </div>
 
-        {/* Right: AOMC Panel + Damage Metrics */}
-        <div className="w-64 flex-shrink-0 flex flex-col gap-2">
-          <AOMCPanel controls={state.aomcControls} />
-          <div className="flex-1 min-h-0">
-            <BlastRadius
-              damage={state.damage}
-              blastItems={currentStepData?.blastRadius}
-              isScenario1Summary={isS1Summary}
+            {/* Center: Network Topology + Audit Trail */}
+            <div className="flex-1 flex flex-col gap-2 min-w-0">
+              <div className="flex-1 min-h-0">
+                <NetworkTopology
+                  topology={state.topology}
+                  aomcActive={aomcActive}
+                  quarantined={state.quarantined}
+                  compromised={state.compromised}
+                  controls={state.aomcControls}
+                  enforcingControl={state.enforcingControl}
+                />
+              </div>
+              {isS2Summary && (
+                <div className="flex-shrink-0">
+                  <AuditTrail entries={state.audit} visible={true} />
+                </div>
+              )}
+            </div>
+
+            {/* Right: AOMC Panel + Damage Metrics */}
+            <div className="w-64 flex-shrink-0 flex flex-col gap-2">
+              <AOMCPanel controls={state.aomcControls} />
+              <div className="flex-1 min-h-0">
+                <BlastRadius
+                  damage={state.damage}
+                  blastItems={currentStepData?.blastRadius}
+                  isScenario1Summary={isS1Summary}
+                />
+              </div>
+            </div>
+          </main>
+
+          {/* Footer: Step Indicator */}
+          <footer className="h-10 flex-shrink-0 px-2 pb-2">
+            <StepIndicator
+              currentStep={state.currentStep}
+              totalSteps={STEPS.length}
+              scenario={state.scenario}
+              stepTitle={currentStepData?.title || ''}
             />
-          </div>
-        </div>
-      </main>
+          </footer>
 
-      {/* Footer: Step Indicator */}
-      <footer className="h-10 flex-shrink-0 px-2 pb-2">
-        <StepIndicator
-          currentStep={state.currentStep}
-          totalSteps={STEPS.length}
-          scenario={state.scenario}
-          stepTitle={currentStepData?.title || ''}
-        />
-      </footer>
-
-      {/* Overlays */}
-      <ViolationOverlay
-        visible={state.activeViolation !== null}
-        title={state.activeViolation?.name || ''}
-        subtitle={state.activeViolation?.detail}
-      />
-      <BlockedOverlay
-        visible={state.activeBlocked !== null}
-        title={state.activeBlocked?.name || ''}
-        subtitle={state.activeBlocked?.detail}
-      />
-
-      {/* Title Slide */}
-      <TitleSlide
-        title={currentStepData?.title || ''}
-        subtitle={currentStepData?.subtitle}
-        scenario={currentStepData?.scenario ?? 0}
-        contributors={currentStepData?.contributors}
-        visible={isTitle}
-      />
+          {/* Overlays */}
+          <ViolationOverlay
+            visible={state.activeViolation !== null}
+            title={state.activeViolation?.name || ''}
+            subtitle={state.activeViolation?.detail}
+          />
+          <BlockedOverlay
+            visible={state.activeBlocked !== null}
+            title={state.activeBlocked?.name || ''}
+            subtitle={state.activeBlocked?.detail}
+          />
+        </>
+      )}
     </div>
   );
 }

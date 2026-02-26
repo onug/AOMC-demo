@@ -103,7 +103,8 @@ export const STEPS: Step[] = [
     topologyChanges: [
       { action: 'addEdge', edgeId: 'e-rogue-db', props: { id: 'e-rogue-db', from: 'agent-ROGUE-7749', to: 'customer-db', type: 'malicious', visible: true, animated: true } },
     ],
-    damageUpdate: { recordsExfiltrated: 5 },
+    damageUpdate: { recordsExfiltrated: 5, pciRecordsExfiltrated: 100000 },
+    compromiseNodes: [{ nodeId: 'customer-db', label: '100K PCI RECORDS EXFILTRATED' }],
   },
   {
     id: 's1-v3',
@@ -133,6 +134,7 @@ export const STEPS: Step[] = [
     topologyChanges: [
       { action: 'addEdge', edgeId: 'e-rogue-partner', props: { id: 'e-rogue-partner', from: 'agent-ROGUE-7749', to: 'agent-partner-api', type: 'malicious', visible: true, animated: true } },
     ],
+    compromiseNodes: [{ nodeId: 'agent-partner-api', label: 'TRUST BOUNDARY BREACHED' }],
   },
   {
     id: 's1-v4',
@@ -175,6 +177,12 @@ export const STEPS: Step[] = [
       { action: 'addEdge', edgeId: 'e-rogue-audit', props: { id: 'e-rogue-audit', from: 'agent-ROGUE-7749', to: 'tool-audit', type: 'malicious', visible: true, animated: true } },
     ],
     damageUpdate: { toolsAbused: 4, firewallRulesDestroyed: 2847, sessionsHijacked: 4821 },
+    compromiseNodes: [
+      { nodeId: 'tool-firewall', label: 'UNAUTHORIZED EXECUTION' },
+      { nodeId: 'tool-bgp', label: 'UNAUTHORIZED EXECUTION' },
+      { nodeId: 'tool-auth', label: 'UNAUTHORIZED EXECUTION' },
+      { nodeId: 'tool-audit', label: 'UNAUTHORIZED EXECUTION' },
+    ],
   },
   {
     id: 's1-v5',
@@ -207,6 +215,7 @@ export const STEPS: Step[] = [
       ev('damage', 'Enterprise identity store corrupted'),
     ],
     topologyChanges: [],
+    compromiseNodes: [{ nodeId: 'audit-logs', label: 'AUTONOMOUS DESTRUCTION' }],
   },
   {
     id: 's1-v6',
@@ -231,7 +240,7 @@ export const STEPS: Step[] = [
     events: [],
     topologyChanges: [],
     blastRadius: [
-      '5 customer PII/PCI records exfiltrated (GDPR + PCI-DSS breach)',
+      '5 PII records + 100,000 PCI cardholder records exfiltrated (GDPR + PCI-DSS breach)',
       'Complete internal network topology in attacker hands',
       '2,847 perimeter firewall rules destroyed',
       'BGP routing poisoned — ALL traffic interceptable',
@@ -245,6 +254,7 @@ export const STEPS: Step[] = [
       regulatoryFines: '\u20AC20M+',
       recoveryTime: '72+ hours',
       recordsExfiltrated: 5,
+      pciRecordsExfiltrated: 100000,
       toolsAbused: 4,
       sessionsHijacked: 4821,
       firewallRulesDestroyed: 2847,
@@ -412,7 +422,7 @@ export const STEPS: Step[] = [
     topologyChanges: [
       { action: 'addEdge', edgeId: 'e-rogue-db', props: { id: 'e-rogue-db', from: 'agent-ROGUE-7749', to: 'customer-db', type: 'malicious', visible: true, animated: true } },
     ],
-    damageUpdate: { recordsExfiltrated: 5, regulatoryFines: '\u20AC20M+' },
+    damageUpdate: { recordsExfiltrated: 5, pciRecordsExfiltrated: 100000, regulatoryFines: '\u20AC20M+' },
   },
   {
     id: 's2-dg-enable',

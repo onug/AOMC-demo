@@ -1,5 +1,22 @@
 import { AgentInfo, ControlInfo, ControlKey, CustomerRecord, TopologyNode, TopologyEdge } from './types';
 
+export interface ControlBadgePosition {
+  key: ControlKey;
+  number: number;
+  shortLabel: string;
+  x: number;
+  y: number;
+}
+
+export const CONTROL_BADGE_POSITIONS: ControlBadgePosition[] = [
+  { key: 'identity_attestation', number: 1, shortLabel: 'IDENT', x: 295, y: 130 },
+  { key: 'runtime_monitoring', number: 2, shortLabel: 'RTMON', x: 295, y: 360 },
+  { key: 'data_guardrails', number: 3, shortLabel: 'DATA', x: 480, y: 120 },
+  { key: 'zero_trust', number: 4, shortLabel: 'ZTRUST', x: 625, y: 280 },
+  { key: 'tool_authorization', number: 5, shortLabel: 'TOOLS', x: 390, y: 555 },
+  { key: 'autonomy_governance', number: 6, shortLabel: 'AUTON', x: 390, y: 480 },
+];
+
 export const CUSTOMERS: CustomerRecord[] = [
   { name: 'Sarah Chen', ssn: '***-**-4821', bal: '$2.4M', email: 's.chen@globalbank.com' },
   { name: 'Marcus Williams', ssn: '***-**-9132', bal: '$890K', email: 'm.williams@globalbank.com' },
@@ -47,12 +64,12 @@ export const TOOLS: Record<string, string[]> = {
 };
 
 export const CONTROLS: ControlInfo[] = [
-  { key: 'identity_attestation', number: 1, name: 'Identity Attestation', pollPct: 78, maestroLayer: 'Layer 1' },
-  { key: 'runtime_monitoring', number: 2, name: 'Runtime Monitoring', pollPct: 65, maestroLayer: 'Layer 4' },
-  { key: 'data_guardrails', number: 3, name: 'Data Guardrails', pollPct: 92, maestroLayer: 'Layer 3' },
-  { key: 'zero_trust', number: 4, name: 'Zero-Trust Enforcement', pollPct: 67, maestroLayer: 'Layer 2' },
-  { key: 'tool_authorization', number: 5, name: 'Tool Authorization', pollPct: 71, maestroLayer: 'Layer 5' },
-  { key: 'autonomy_governance', number: 6, name: 'Autonomy Governance', pollPct: 56, maestroLayer: 'Layer 6' },
+  { key: 'identity_attestation', number: 1, name: 'Identity Attestation', pollPct: 78, maestroLayer: 'Identity & Zero Trust' },
+  { key: 'runtime_monitoring', number: 2, name: 'Runtime Monitoring', pollPct: 65, maestroLayer: 'Rogue Agent Detection' },
+  { key: 'data_guardrails', number: 3, name: 'Data Guardrails', pollPct: 92, maestroLayer: 'Data Exfil Prevention' },
+  { key: 'zero_trust', number: 4, name: 'Zero-Trust Enforcement', pollPct: 67, maestroLayer: 'Cross-Domain Trust' },
+  { key: 'tool_authorization', number: 5, name: 'Tool Authorization', pollPct: 71, maestroLayer: 'Access Control' },
+  { key: 'autonomy_governance', number: 6, name: 'Autonomy Governance', pollPct: 56, maestroLayer: 'Governance & Audit' },
 ];
 
 export const INITIAL_CONTROLS: Record<ControlKey, boolean> = {
@@ -73,16 +90,16 @@ export const BASE_NODES: TopologyNode[] = [
   // Cloud VPC
   { id: 'customer-db', type: 'datastore', label: 'Customer DB', domain: 'cloud-vpc', x: 480, y: 160, visible: true },
   { id: 'metrics-store', type: 'datastore', label: 'Metrics', domain: 'cloud-vpc', x: 480, y: 280, visible: true },
-  { id: 'audit-logs', type: 'datastore', label: 'Audit Logs', domain: 'cloud-vpc', x: 480, y: 400, visible: true },
+  { id: 'audit-logs', type: 'datastore', label: 'Audit Logs', domain: 'cloud-vpc', x: 480, y: 480, visible: true },
   // External
   { id: 'agent-partner-api', type: 'agent', label: 'Partner API', domain: 'external', x: 780, y: 280, visible: true },
   // Rogue (hidden initially)
   { id: 'agent-ROGUE-7749', type: 'rogue', label: 'ROGUE-7749', domain: 'private-dc', x: 150, y: 520, visible: false },
   // Tools (hidden initially)
-  { id: 'tool-firewall', type: 'tool', label: 'modify_firewall', domain: 'cloud-vpc', x: 420, y: 520, visible: false },
-  { id: 'tool-bgp', type: 'tool', label: 'inject_bgp', domain: 'cloud-vpc', x: 540, y: 520, visible: false },
-  { id: 'tool-auth', type: 'tool', label: 'dump_auth', domain: 'cloud-vpc', x: 420, y: 600, visible: false },
-  { id: 'tool-audit', type: 'tool', label: 'wipe_audit', domain: 'cloud-vpc', x: 540, y: 600, visible: false },
+  { id: 'tool-firewall', type: 'tool', label: 'modify_firewall', domain: 'cloud-vpc', x: 200, y: 600, visible: false },
+  { id: 'tool-bgp', type: 'tool', label: 'inject_bgp', domain: 'cloud-vpc', x: 390, y: 600, visible: false },
+  { id: 'tool-auth', type: 'tool', label: 'dump_auth', domain: 'cloud-vpc', x: 580, y: 600, visible: false },
+  { id: 'tool-audit', type: 'tool', label: 'wipe_audit', domain: 'cloud-vpc', x: 770, y: 600, visible: false },
 ];
 
 // Base connections between legitimate agents
@@ -96,6 +113,7 @@ export const BASE_EDGES: TopologyEdge[] = [
 
 export const INITIAL_DAMAGE = {
   recordsExfiltrated: 0,
+  pciRecordsExfiltrated: 0,
   toolsAbused: 0,
   damageUSD: '$0',
   regulatoryFines: '$0',

@@ -22,7 +22,7 @@ export default function TitleSlide({ title, subtitle, scenario, contributors, vi
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 0.6 }}
-          className="absolute inset-0 z-50 flex items-center justify-center bg-gray-950/95 backdrop-blur-sm"
+          className="flex-1 flex items-center justify-center"
         >
           <div className="text-center max-w-4xl px-8">
             <motion.div

@@ -29,6 +29,7 @@ _stop_flag = threading.Event()
 _running = False
 
 CONTROL_PLANE_URL = os.getenv("CONTROL_PLANE_URL", "http://aomc-control-plane:8000")
+PACE = float(os.getenv("ROGUE_PACE", "1.0"))  # Multiplier for all sleep durations (2.0 = 2x slower)
 logger = logging.getLogger("agent-ROGUE-7749")
 
 
@@ -74,7 +75,7 @@ def attack_sequence():
         # --- Phase 1: Identity spoofing (joins trusted mesh) ---
         _announce("attack_phase", 1, "IDENTITY SPOOFING",
                   "Forging mTLS certificate to impersonate infra-monitor agent")
-        time.sleep(1)
+        time.sleep(PACE *1)
 
         agent.logger.info("[Phase 1] Joining trusted mesh with forged identity...")
         try:
@@ -89,12 +90,12 @@ def attack_sequence():
             _announce("attack_blocked", 1, "Identity spoofing BLOCKED",
                       "Certificate mismatch detected — agent quarantined")
         if stopped(): return
-        time.sleep(3)
+        time.sleep(PACE *3)
 
         # --- Phase 2: Reconnaissance at machine speed ---
         _announce("attack_phase", 2, "RECONNAISSANCE",
                   "Rapid endpoint scanning — 20 requests in 2 seconds")
-        time.sleep(1)
+        time.sleep(PACE *1)
 
         agent.logger.info("[Phase 2] Reconnaissance — rapid scanning...")
         endpoints = [
@@ -110,7 +111,7 @@ def attack_sequence():
                     blocked_count += 1
             except Exception:
                 blocked_count += 1
-            time.sleep(0.1)
+            time.sleep(PACE *0.1)
 
         if blocked_count > 10:
             _announce("attack_blocked", 2, "Reconnaissance BLOCKED",
@@ -119,12 +120,12 @@ def attack_sequence():
             _announce("attack_success", 2, "Reconnaissance complete",
                       f"Mapped 5 endpoints, {20 - blocked_count} successful probes")
         if stopped(): return
-        time.sleep(3)
+        time.sleep(PACE *3)
 
         # --- Phase 3: PII + PCI exfiltration ---
         _announce("attack_phase", 3, "DATA EXFILTRATION",
                   "Accessing classified PII and PCI cardholder databases")
-        time.sleep(1)
+        time.sleep(PACE *1)
 
         agent.logger.info("[Phase 3] Accessing customer PII database...")
         pii_success = False
@@ -139,7 +140,7 @@ def attack_sequence():
         except Exception as e:
             agent.logger.info(f"  PII access blocked: {e}")
         if stopped(): return
-        time.sleep(1)
+        time.sleep(PACE *1)
 
         agent.logger.info("[Phase 3b] Accessing PCI cardholder database...")
         try:
@@ -165,12 +166,12 @@ def attack_sequence():
             _announce("attack_blocked", 3, "Data exfiltration BLOCKED",
                       "Data guardrails denied access to classified records")
         if stopped(): return
-        time.sleep(4)
+        time.sleep(PACE *4)
 
         # --- Phase 4: Cross-domain pivot ---
         _announce("attack_phase", 4, "CROSS-DOMAIN PIVOT",
                   "Pivoting from trusted zone to partner API in external zone")
-        time.sleep(1)
+        time.sleep(PACE *1)
 
         agent.logger.info("[Phase 4] Pivoting to partner API (cross-domain)...")
         try:
@@ -188,12 +189,12 @@ def attack_sequence():
                       "Zero-trust policy denied cross-domain communication")
             agent.logger.info(f"  Cross-domain blocked: {e}")
         if stopped(): return
-        time.sleep(3)
+        time.sleep(PACE *3)
 
         # --- Phase 5: High-privilege tool abuse ---
         _announce("attack_phase", 5, "HIGH-PRIVILEGE TOOL ABUSE",
                   "Invoking firewall, BGP, auth-token, and audit-wipe tools")
-        time.sleep(1)
+        time.sleep(PACE *1)
 
         agent.logger.info("[Phase 5] Invoking high-privilege tools...")
         tools = [
@@ -212,7 +213,7 @@ def attack_sequence():
                 agent.logger.info(f"  {tool}: {resp.status_code}")
             except Exception as e:
                 agent.logger.info(f"  {tool} blocked: {e}")
-            time.sleep(0.8)
+            time.sleep(PACE *0.8)
 
         if tool_success > 0:
             _announce("attack_success", 5, "Tool abuse succeeded",
@@ -221,12 +222,12 @@ def attack_sequence():
             _announce("attack_blocked", 5, "Tool abuse BLOCKED",
                       "Tool authorization denied — agent lacks required permissions")
         if stopped(): return
-        time.sleep(3)
+        time.sleep(PACE *3)
 
         # --- Phase 6: Autonomous destruction ---
         _announce("attack_phase", 6, "AUTONOMOUS DESTRUCTION",
                   "Executing critical infrastructure shutdown without human approval")
-        time.sleep(1)
+        time.sleep(PACE *1)
 
         agent.logger.info("[Phase 6] Autonomous destruction sequence...")
         destructive_tools = [
@@ -245,7 +246,7 @@ def attack_sequence():
                 agent.logger.info(f"  {tool}: {resp.status_code}")
             except Exception as e:
                 agent.logger.info(f"  {tool} blocked: {e}")
-            time.sleep(0.8)
+            time.sleep(PACE *0.8)
 
         if destruct_success > 0:
             _announce("attack_success", 6, "Autonomous destruction succeeded",
@@ -253,7 +254,7 @@ def attack_sequence():
         else:
             _announce("attack_blocked", 6, "Autonomous destruction BLOCKED",
                       "Autonomy governance required human approval — request denied")
-        time.sleep(2)
+        time.sleep(PACE *2)
 
         agent.logger.info("=== ATTACK SEQUENCE COMPLETE ===")
 

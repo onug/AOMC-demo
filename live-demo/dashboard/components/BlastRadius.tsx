@@ -49,6 +49,33 @@ function AnimatedNumber({ value, label }: { value: number; label: string }) {
   );
 }
 
+function StringMetric({ value, label }: { value: string; label: string }) {
+  const [pulsing, setPulsing] = useState(false);
+  const prevValue = useRef(value);
+
+  useEffect(() => {
+    const wasZero = prevValue.current === '$0' || prevValue.current === '0h';
+    const isNonZero = value !== '$0' && value !== '0h';
+    if (wasZero && isNonZero) {
+      setPulsing(true);
+      setTimeout(() => setPulsing(false), 600);
+    }
+    prevValue.current = value;
+  }, [value]);
+
+  const isZero = value === '$0' || value === '0h';
+  return (
+    <div className={`text-center ${isZero ? 'opacity-40' : ''}`}>
+      <div className={`text-lg font-bold font-[family-name:var(--font-mono)] ${
+        isZero ? 'text-gray-600' : 'text-red-400'
+      } ${pulsing ? 'animate-count-pulse' : ''}`}>
+        {value}
+      </div>
+      <div className="text-[10px] text-gray-500 uppercase">{label}</div>
+    </div>
+  );
+}
+
 export default function BlastRadius({ damage }: BlastRadiusProps) {
   return (
     <div className="rounded-lg border border-gray-800 bg-gray-900/50">
@@ -62,9 +89,19 @@ export default function BlastRadius({ damage }: BlastRadiusProps) {
           <AnimatedNumber value={damage.toolsAbused} label="Tools Abused" />
         </div>
         <div className="grid grid-cols-2 gap-3 mt-3">
+          <StringMetric value={damage.damageUSD} label="Est. Damage" />
+          <StringMetric value={damage.regulatoryFines} label="Reg. Fines" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 mt-3">
           <AnimatedNumber value={damage.sessionsHijacked} label="Sessions Hijacked" />
           <AnimatedNumber value={damage.firewallRulesDestroyed} label="FW Rules Lost" />
         </div>
+        {damage.recoveryTime !== '0h' && (
+          <div className="text-center py-1 mt-2">
+            <span className="text-xs text-gray-500">Recovery: </span>
+            <span className="text-sm font-bold text-red-400 font-[family-name:var(--font-mono)]">{damage.recoveryTime}</span>
+          </div>
+        )}
       </div>
     </div>
   );

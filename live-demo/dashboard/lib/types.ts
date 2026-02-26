@@ -75,6 +75,9 @@ export interface DamageMetrics {
   recordsExfiltrated: number;
   pciRecordsExfiltrated: number;
   toolsAbused: number;
+  damageUSD: string;
+  regulatoryFines: string;
+  recoveryTime: string;
   sessionsHijacked: number;
   firewallRulesDestroyed: number;
 }

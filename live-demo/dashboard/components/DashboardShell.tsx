@@ -37,7 +37,12 @@ const AGENT_EDGE_MAP: Record<string, string[]> = {
 const EDGE_DECAY_MS = 4000;
 
 // Map attack phases to the rogue edges that should appear for each
+const OVERLAY_MS = Number(process.env.NEXT_PUBLIC_OVERLAY_MS || '3000');
+
 const PHASE_ROGUE_EDGES: Record<number, TopologyEdge[]> = {
+  1: [
+    { id: 'e-rogue-infra', from: 'agent-ROGUE-7749', to: 'agent-infra-monitor', type: 'malicious', visible: true, animated: true },
+  ],
   2: [
     { id: 'e-rogue-metrics', from: 'agent-ROGUE-7749', to: 'metrics-store', type: 'malicious', visible: true, animated: true },
   ],
@@ -72,6 +77,9 @@ const INITIAL_DAMAGE: DamageMetrics = {
   recordsExfiltrated: 0,
   pciRecordsExfiltrated: 0,
   toolsAbused: 0,
+  damageUSD: '$0',
+  regulatoryFines: '$0',
+  recoveryTime: '0h',
   sessionsHijacked: 0,
   firewallRulesDestroyed: 0,
 };
@@ -107,14 +115,14 @@ export default function DashboardShell() {
   const flashViolation = useCallback((title: string, subtitle?: string) => {
     clearTimeout(violationTimer.current);
     setViolation({ title, subtitle });
-    violationTimer.current = setTimeout(() => setViolation(null), 3000);
+    violationTimer.current = setTimeout(() => setViolation(null), OVERLAY_MS);
   }, []);
 
   // Show blocked overlay briefly
   const flashBlocked = useCallback((title: string, subtitle?: string) => {
     clearTimeout(blockedTimer.current);
     setBlocked({ title, subtitle });
-    blockedTimer.current = setTimeout(() => setBlocked(null), 3000);
+    blockedTimer.current = setTimeout(() => setBlocked(null), OVERLAY_MS);
   }, []);
 
   // Process incoming WebSocket events
@@ -139,12 +147,14 @@ export default function DashboardShell() {
     }
     if (event.type === 'attack_success') {
       flashViolation(event.title || 'CONTROL BYPASSED', event.detail);
-      // Mark target nodes as compromised based on attack phase
+      // Mark target nodes as compromised and escalate $ damage based on attack phase
       const phase = event.phase;
       if (phase === 3) {
         setCompromised(prev => new Map(prev).set('customer-db', '100K PCI RECORDS EXFILTRATED'));
+        setDamage(prev => ({ ...prev, damageUSD: '$50M+', regulatoryFines: '\u20AC20M+' }));
       } else if (phase === 4) {
         setCompromised(prev => new Map(prev).set('agent-partner-api', 'TRUST BOUNDARY BREACHED'));
+        setDamage(prev => ({ ...prev, damageUSD: '$150M+' }));
       } else if (phase === 5) {
         setCompromised(prev => {
           const next = new Map(prev);
@@ -154,8 +164,10 @@ export default function DashboardShell() {
           next.set('tool-audit', 'UNAUTHORIZED EXECUTION');
           return next;
         });
+        setDamage(prev => ({ ...prev, damageUSD: '$300M+' }));
       } else if (phase === 6) {
         setCompromised(prev => new Map(prev).set('audit-logs', 'AUTONOMOUS DESTRUCTION'));
+        setDamage(prev => ({ ...prev, damageUSD: '$500M+', recoveryTime: '72+ hours' }));
       }
       return;
     }
@@ -165,7 +177,7 @@ export default function DashboardShell() {
       if (event.phase && PHASE_CONTROL_MAP[event.phase]) {
         clearTimeout(enforcingTimer.current);
         setEnforcingControl(PHASE_CONTROL_MAP[event.phase]);
-        enforcingTimer.current = setTimeout(() => setEnforcingControl(null), 3000);
+        enforcingTimer.current = setTimeout(() => setEnforcingControl(null), OVERLAY_MS);
       }
       // Convert rogue edges to blocked (green ✕), then remove after 3s
       setEdges(prev => prev.map(e =>
@@ -174,7 +186,7 @@ export default function DashboardShell() {
       clearTimeout(blockedEdgeTimer.current);
       blockedEdgeTimer.current = setTimeout(() => {
         setEdges(prev => prev.filter(e => !e.id.startsWith('e-rogue')));
-      }, 3000);
+      }, OVERLAY_MS);
       return;
     }
 
@@ -372,6 +384,115 @@ export default function DashboardShell() {
   }, []);
 
   const anyControlActive = Object.values(controls).some(Boolean);
+
+  // Intro slides — title → scenario1 → dashboard
+  const [slidePhase, setSlidePhase] = useState<'title' | 'scenario1' | null>('title');
+  useEffect(() => {
+    if (!slidePhase) return;
+    function advance(e: KeyboardEvent) {
+      if (e.key === ' ' || e.key === 'ArrowRight' || e.key === 'Enter' || e.key === 'Escape') {
+        e.preventDefault();
+        setSlidePhase(prev => prev === 'title' ? 'scenario1' : null);
+      }
+    }
+    window.addEventListener('keydown', advance);
+    return () => window.removeEventListener('keydown', advance);
+  }, [slidePhase]);
+
+  // Auto-launch rogue agent 20s after slides dismissed (if not already started)
+  const autoLaunchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => {
+    if (slidePhase) return; // only start timer after all slides dismissed
+    autoLaunchTimer.current = setTimeout(() => {
+      // Only launch if not already running
+      setRogueRunning(prev => {
+        if (!prev) {
+          handleLaunch();
+        }
+        return prev;
+      });
+    }, 20000);
+    return () => clearTimeout(autoLaunchTimer.current);
+  }, [slidePhase, handleLaunch]);
+  // Cancel auto-launch if manually triggered
+  useEffect(() => {
+    if (rogueRunning) clearTimeout(autoLaunchTimer.current);
+  }, [rogueRunning]);
+
+  // Auto-relaunch: after "all controls off" attack completes, wait 60s then enable controls + re-launch
+  const relaunchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  const prevRogueRunning = useRef(false);
+  useEffect(() => {
+    // Detect rogue finishing (true → false)
+    if (prevRogueRunning.current && !rogueRunning) {
+      const allOff = !Object.values(controls).some(Boolean);
+      if (allOff) {
+        relaunchTimer.current = setTimeout(async () => {
+          await handleAllControlsOn();
+          // Small delay so controls propagate before attack starts
+          setTimeout(() => { handleLaunch(); }, 2000);
+        }, 30000);
+      }
+    }
+    prevRogueRunning.current = rogueRunning;
+  }, [rogueRunning, controls, handleAllControlsOn, handleLaunch]);
+  // Cancel relaunch if user manually intervenes
+  useEffect(() => {
+    if (rogueRunning) clearTimeout(relaunchTimer.current);
+  }, [rogueRunning]);
+
+  if (slidePhase === 'title') {
+    return (
+      <div
+        className="h-screen w-screen flex items-center justify-center bg-gray-950 cursor-pointer"
+        onClick={() => setSlidePhase('scenario1')}
+      >
+        <div className="text-center max-w-4xl px-8">
+          <h1 className="text-5xl font-bold text-cyan-400 mb-6 tracking-tight">
+            ONUG Agentic AI Overlay Working Group
+          </h1>
+          <div className="w-32 h-1 mx-auto mb-8 rounded-full" style={{ backgroundColor: '#06b6d4' }} />
+          <p className="text-xl text-gray-300 leading-relaxed mb-8">
+            AI Networking Summit 2026 — Live Infrastructure Demo
+          </p>
+          <div className="space-y-3 text-gray-400">
+            <p className="text-sm uppercase tracking-widest text-gray-500">ONUG Agentic AI Overlay Working Group</p>
+            <p className="text-base">Contributors: eBay &middot; Cigna &middot; Bank of America &middot; Indeed &middot; Kraken</p>
+            <p className="text-sm text-gray-500">Architecture: Multi-Agent &middot; Multi-Trust-Domain</p>
+            <p className="text-sm text-gray-500">Frameworks: MAESTRO (CSA) &middot; NIST SP 800-53 AI Overlays</p>
+          </div>
+          <p className="mt-12 text-sm text-gray-600 font-[family-name:var(--font-mono)]">
+            Press SPACE or click to continue
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (slidePhase === 'scenario1') {
+    return (
+      <div
+        className="h-screen w-screen flex items-center justify-center bg-gray-950 cursor-pointer"
+        onClick={() => setSlidePhase(null)}
+      >
+        <div className="text-center max-w-4xl px-8">
+          <h1 className="text-5xl font-bold text-red-500 mb-6 tracking-tight">
+            SCENARIO 1: THE CATASTROPHIC CASCADE
+          </h1>
+          <div className="w-32 h-1 mx-auto mb-8 rounded-full" style={{ backgroundColor: '#ef4444' }} />
+          <div className="text-xl text-gray-300 leading-relaxed whitespace-pre-line mb-8">
+            GlobalBank Financial Services — Fortune 500 enterprise.{'\n'}
+            Agentic AI deployed for infrastructure monitoring.{'\n'}
+            ALL SIX security requirements are UNMET.{'\n'}
+            Watch one rogue agent cascade through the entire enterprise.
+          </div>
+          <p className="mt-12 text-sm text-gray-600 font-[family-name:var(--font-mono)]">
+            Press SPACE or click to continue
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="h-screen w-screen flex flex-col">
