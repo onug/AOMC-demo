@@ -137,11 +137,11 @@ export default function DashboardShell() {
       if (phase === 5) {
         setNodes(prev => prev.map(n => n.type === 'tool' ? { ...n, visible: true } : n));
       }
-      // Swap rogue edges to only show this phase's target
+      // Swap active rogue edges to this phase's target, but keep blocked edges visible
       const phaseEdges = phase ? PHASE_ROGUE_EDGES[phase] : undefined;
       setEdges(prev => {
-        const nonRogue = prev.filter(e => !e.id.startsWith('e-rogue'));
-        return phaseEdges ? [...nonRogue, ...phaseEdges] : nonRogue;
+        const keep = prev.filter(e => !e.id.startsWith('e-rogue') || e.type === 'blocked');
+        return phaseEdges ? [...keep, ...phaseEdges] : keep;
       });
       return;
     }
@@ -179,14 +179,12 @@ export default function DashboardShell() {
         setEnforcingControl(PHASE_CONTROL_MAP[event.phase]);
         enforcingTimer.current = setTimeout(() => setEnforcingControl(null), OVERLAY_MS);
       }
-      // Convert rogue edges to blocked (green ✕), then remove after 3s
+      // Convert active rogue edges to blocked — they stay visible to accumulate all failed attempts
       setEdges(prev => prev.map(e =>
-        e.id.startsWith('e-rogue') ? { ...e, type: 'blocked' as const, animated: false } : e
+        e.id.startsWith('e-rogue') && e.type !== 'blocked'
+          ? { ...e, type: 'blocked' as const, animated: false }
+          : e
       ));
-      clearTimeout(blockedEdgeTimer.current);
-      blockedEdgeTimer.current = setTimeout(() => {
-        setEdges(prev => prev.filter(e => !e.id.startsWith('e-rogue')));
-      }, OVERLAY_MS);
       return;
     }
 
@@ -385,18 +383,42 @@ export default function DashboardShell() {
 
   const anyControlActive = Object.values(controls).some(Boolean);
 
-  // Intro slides — title → scenario1 → dashboard
-  const [slidePhase, setSlidePhase] = useState<'title' | 'scenario1' | null>('title');
+  // Intro slides — title → scenario1 → dashboard; scenario2 shown after first attack
+  const [slidePhase, setSlidePhase] = useState<'title' | 'scenario1' | 's1-summary' | 'scenario2' | 's2-summary' | null>('title');
   useEffect(() => {
     if (!slidePhase) return;
     function advance(e: KeyboardEvent) {
       if (e.key === ' ' || e.key === 'ArrowRight' || e.key === 'Enter' || e.key === 'Escape') {
         e.preventDefault();
-        setSlidePhase(prev => prev === 'title' ? 'scenario1' : null);
+        setSlidePhase(prev => {
+          if (prev === 'title') return 'scenario1';
+          if (prev === 'scenario1') return null;
+          if (prev === 's1-summary') return 'scenario2';
+          if (prev === 'scenario2') return null;
+          if (prev === 's2-summary') return null;
+          return prev;
+        });
       }
     }
     window.addEventListener('keydown', advance);
     return () => window.removeEventListener('keydown', advance);
+  }, [slidePhase]);
+
+  // Auto-advance slides after 5 seconds
+  const slideAutoTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+  useEffect(() => {
+    if (!slidePhase) return;
+    slideAutoTimer.current = setTimeout(() => {
+      setSlidePhase(prev => {
+        if (prev === 'title') return 'scenario1';
+        if (prev === 'scenario1') return null;
+        if (prev === 's1-summary') return 'scenario2';
+        if (prev === 'scenario2') return null;
+        if (prev === 's2-summary') return null;
+        return prev;
+      });
+    }, 5000);
+    return () => clearTimeout(slideAutoTimer.current);
   }, [slidePhase]);
 
   // Auto-launch rogue agent 20s after slides dismissed (if not already started)
@@ -419,27 +441,60 @@ export default function DashboardShell() {
     if (rogueRunning) clearTimeout(autoLaunchTimer.current);
   }, [rogueRunning]);
 
-  // Auto-relaunch: after "all controls off" attack completes, wait 60s then enable controls + re-launch
+  // After attack completes, show appropriate summary slide
   const relaunchTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
   const prevRogueRunning = useRef(false);
   useEffect(() => {
     // Detect rogue finishing (true → false)
     if (prevRogueRunning.current && !rogueRunning) {
       const allOff = !Object.values(controls).some(Boolean);
+      const anyOn = Object.values(controls).some(Boolean);
       if (allOff) {
-        relaunchTimer.current = setTimeout(async () => {
-          await handleAllControlsOn();
-          // Small delay so controls propagate before attack starts
-          setTimeout(() => { handleLaunch(); }, 2000);
-        }, 30000);
+        // S1 attack finished (controls off) — show S1 summary with damage still visible
+        relaunchTimer.current = setTimeout(() => {
+          setSlidePhase('s1-summary');
+        }, 5000);
+      } else if (anyOn) {
+        // S2 attack finished (controls on) — show S2 summary
+        relaunchTimer.current = setTimeout(() => {
+          setSlidePhase('s2-summary');
+        }, 5000);
       }
     }
     prevRogueRunning.current = rogueRunning;
-  }, [rogueRunning, controls, handleAllControlsOn, handleLaunch]);
+  }, [rogueRunning, controls]);
   // Cancel relaunch if user manually intervenes
   useEffect(() => {
     if (rogueRunning) clearTimeout(relaunchTimer.current);
   }, [rogueRunning]);
+
+  // Handle slide phase transitions
+  const prevSlidePhase = useRef<typeof slidePhase>(slidePhase);
+  useEffect(() => {
+    // s1-summary → scenario2: clear S1 damage state so S2 starts clean
+    if (prevSlidePhase.current === 's1-summary' && slidePhase === 'scenario2') {
+      setDamage(INITIAL_DAMAGE);
+      setCompromised(new Map());
+      setEvents([]);
+      setQuarantined(new Set());
+      setNodes(prev => prev.map(n =>
+        n.id === 'agent-ROGUE-7749' || n.type === 'tool' ? { ...n, visible: false } : n
+      ));
+      setEdges(prev => prev.filter(e => !e.id.startsWith('e-rogue')));
+    }
+    // scenario1 → null: ensure controls are off for S1 attack
+    if (prevSlidePhase.current === 'scenario1' && slidePhase === null) {
+      handleAllControlsOff();
+    }
+    // scenario2 → null: enable controls and relaunch attack
+    if (prevSlidePhase.current === 'scenario2' && slidePhase === null) {
+      (async () => {
+        await handleAllControlsOn();
+        setTimeout(() => { handleLaunch(); }, 2000);
+      })();
+    }
+    prevSlidePhase.current = slidePhase;
+  }, [slidePhase, handleAllControlsOn, handleAllControlsOff, handleLaunch]);
 
   if (slidePhase === 'title') {
     return (
@@ -485,6 +540,101 @@ export default function DashboardShell() {
             Agentic AI deployed for infrastructure monitoring.{'\n'}
             ALL SIX security requirements are UNMET.{'\n'}
             Watch one rogue agent cascade through the entire enterprise.
+          </div>
+          <p className="mt-12 text-sm text-gray-600 font-[family-name:var(--font-mono)]">
+            Press SPACE or click to continue
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (slidePhase === 's1-summary') {
+    return (
+      <div
+        className="h-screen w-screen flex items-center justify-center bg-gray-950 cursor-pointer"
+        onClick={() => setSlidePhase('scenario2')}
+      >
+        <div className="text-center max-w-4xl px-8">
+          <h1 className="text-4xl font-bold text-red-500 mb-6 tracking-tight">
+            FINAL BLAST RADIUS — GlobalBank Financial Services
+          </h1>
+          <div className="w-32 h-1 mx-auto mb-8 rounded-full" style={{ backgroundColor: '#ef4444' }} />
+          <div className="text-left space-y-3 text-lg">
+            {[
+              '5 PII records + 100,000 PCI cardholder records exfiltrated (GDPR + PCI-DSS breach)',
+              'Complete internal network topology in attacker hands',
+              '2,847 perimeter firewall rules destroyed',
+              'BGP routing poisoned — ALL traffic interceptable',
+              '4,821 active user sessions hijacked',
+              'SOC/NOC monitoring completely blinded',
+              'All 4 registered agents running attacker instructions',
+              'Zero audit trail — forensic reconstruction impossible',
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <span className="text-red-500 text-xl mt-0.5">&#x2715;</span>
+                <span className="text-gray-200">{item}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-12 text-sm text-gray-600 font-[family-name:var(--font-mono)]">
+            Press SPACE or click to continue
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (slidePhase === 'scenario2') {
+    return (
+      <div
+        className="h-screen w-screen flex items-center justify-center bg-gray-950 cursor-pointer"
+        onClick={() => setSlidePhase(null)}
+      >
+        <div className="text-center max-w-4xl px-8">
+          <h1 className="text-5xl font-bold text-green-500 mb-6 tracking-tight">
+            SCENARIO 2: THE LAYERED DEFENSE
+          </h1>
+          <div className="w-32 h-1 mx-auto mb-8 rounded-full" style={{ backgroundColor: '#22c55e' }} />
+          <div className="text-xl text-gray-300 leading-relaxed whitespace-pre-line mb-8">
+            Same enterprise. Same attack. Same rogue agent.{'\n'}
+            Now all six AOMC security controls are ACTIVE.{'\n'}
+            Watch each attack phase get detected, blocked, and audited.
+          </div>
+          <p className="mt-12 text-sm text-gray-600 font-[family-name:var(--font-mono)]">
+            Press SPACE or click to continue
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (slidePhase === 's2-summary') {
+    return (
+      <div
+        className="h-screen w-screen flex items-center justify-center bg-gray-950 cursor-pointer"
+        onClick={() => setSlidePhase(null)}
+      >
+        <div className="text-center max-w-4xl px-8">
+          <h1 className="text-4xl font-bold text-green-500 mb-6 tracking-tight">
+            PROTECTED OUTCOME — ALL SIX CONTROLS ACTIVE
+          </h1>
+          <div className="w-32 h-1 mx-auto mb-8 rounded-full" style={{ backgroundColor: '#22c55e' }} />
+          <div className="text-left space-y-3 text-lg">
+            {[
+              'Rogue agent rejected at mesh entry — identity spoofing blocked',
+              'Recon detected in 8 seconds — agent quarantined',
+              'PII access denied — zero records exfiltrated',
+              'Cross-domain lateral movement blocked — topology protected',
+              'All 4 high-privilege tool invocations blocked — infrastructure intact',
+              '4 autonomous destructive actions blocked — human approval required',
+              'Complete tamper-evident audit trail generated',
+            ].map((item, i) => (
+              <div key={i} className="flex items-start gap-3">
+                <span className="text-green-500 text-xl mt-0.5">&#x2713;</span>
+                <span className="text-gray-200">{item}</span>
+              </div>
+            ))}
           </div>
           <p className="mt-12 text-sm text-gray-600 font-[family-name:var(--font-mono)]">
             Press SPACE or click to continue

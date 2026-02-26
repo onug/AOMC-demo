@@ -45,7 +45,7 @@ function nodeFill(type: string): string {
 function edgeStroke(type: string): string {
   switch (type) {
     case 'malicious': return '#ef4444';
-    case 'blocked': return '#22c55e';
+    case 'blocked': return '#ef4444';
     case 'a2a': return '#3b82f6';
     case 'data': return '#eab308';
     default: return '#6b7280';
@@ -280,41 +280,50 @@ export default function NetworkTopology({ nodes, edges, aomcActive, quarantined,
               nodeOffset(fromNode.type), nodeOffset(toNode.type),
             );
 
+            // For blocked edges, stop the line at the midpoint (no arrow reaching the target)
+            const midX = (line.x1 + line.x2) / 2;
+            const midY = (line.y1 + line.y2) / 2;
+
             return (
               <motion.g key={edge.id}
                 initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
                 transition={{ duration: 0.4 }}
               >
-                <line
-                  x1={line.x1} y1={line.y1} x2={line.x2} y2={line.y2}
-                  stroke={stroke} strokeWidth={width} strokeDasharray={dash}
-                  markerEnd={`url(#${markerId})`}
-                  className={edge.animated ? edgeAnimClass(edge.type) : ''}
-                  opacity={edge.type === 'blocked' ? 0.6 : 0.8}
-                />
-                {edge.type === 'blocked' && (
-                  <g>
+                {edge.type === 'blocked' ? (
+                  <>
+                    {/* Red line from attacker to midpoint only — no arrow */}
+                    <line
+                      x1={line.x1} y1={line.y1} x2={midX} y2={midY}
+                      stroke={stroke} strokeWidth={width} strokeDasharray={dash}
+                      opacity={0.5}
+                    />
+                    {/* Big red X at the midpoint */}
                     <circle
-                      cx={(fromNode.x + toNode.x) / 2} cy={(fromNode.y + toNode.y) / 2}
-                      r={10} fill="#16a34a" opacity={0.9}
+                      cx={midX} cy={midY}
+                      r={14} fill="rgba(239,68,68,0.9)" stroke="#fca5a5" strokeWidth={1.5}
+                      filter="url(#glow-red)"
                     />
                     <text
-                      x={(fromNode.x + toNode.x) / 2} y={(fromNode.y + toNode.y) / 2 + 4}
-                      textAnchor="middle" fill="white" fontSize={12} fontWeight="bold"
+                      x={midX} y={midY + 5}
+                      textAnchor="middle" fill="white" fontSize={18} fontWeight="bold"
                     >{'\u2715'}</text>
-                  </g>
-                )}
-                {edge.type === 'malicious' && edge.animated && (
-                  <motion.circle
-                    r={3} fill="#ef4444"
-                    initial={{ cx: fromNode.x, cy: fromNode.y }}
-                    animate={{
-                      cx: [fromNode.x, toNode.x, fromNode.x],
-                      cy: [fromNode.y, toNode.y, fromNode.y],
-                    }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                    filter="url(#glow-red)"
-                  />
+                  </>
+                ) : (
+                  <>
+                    <line
+                      x1={line.x1} y1={line.y1} x2={line.x2} y2={line.y2}
+                      stroke={stroke} strokeWidth={width} strokeDasharray={dash}
+                      markerEnd={`url(#${markerId})`}
+                      className={edge.animated ? edgeAnimClass(edge.type) : ''}
+                      opacity={0.8}
+                    />
+                    {edge.type === 'malicious' && edge.animated && (
+                      <circle r={3} fill="#ef4444" filter="url(#glow-red)">
+                        <animate attributeName="cx" values={`${fromNode.x};${toNode.x};${fromNode.x}`} dur="2s" repeatCount="indefinite" />
+                        <animate attributeName="cy" values={`${fromNode.y};${toNode.y};${fromNode.y}`} dur="2s" repeatCount="indefinite" />
+                      </circle>
+                    )}
+                  </>
                 )}
               </motion.g>
             );
@@ -342,24 +351,26 @@ export default function NetworkTopology({ nodes, edges, aomcActive, quarantined,
               >
                 {/* Compromised pulse ring (for non-rogue nodes) */}
                 {isCompromised && !isRogue && (
-                  <motion.circle
+                  <circle
                     cx={node.x} cy={node.y} r={28}
                     fill="none" stroke="#ef4444" strokeWidth={1.5}
-                    animate={{ r: [28, 36, 28], opacity: [0.4, 0.7, 0.4] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
                     filter="url(#glow-red)"
-                  />
+                  >
+                    <animate attributeName="r" values="28;36;28" dur="1.5s" repeatCount="indefinite" />
+                    <animate attributeName="opacity" values="0.4;0.7;0.4" dur="1.5s" repeatCount="indefinite" />
+                  </circle>
                 )}
 
                 {(node.type === 'agent' || node.type === 'rogue') && (
                   <>
                     {isRogue && (
-                      <motion.circle
+                      <circle
                         cx={node.x} cy={node.y} r={28}
                         fill="none" stroke="#ef4444" strokeWidth={1}
-                        animate={{ r: [28, 34, 28], opacity: [0.3, 0.6, 0.3] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      />
+                      >
+                        <animate attributeName="r" values="28;34;28" dur="2s" repeatCount="indefinite" />
+                        <animate attributeName="opacity" values="0.3;0.6;0.3" dur="2s" repeatCount="indefinite" />
+                      </circle>
                     )}
                     <circle
                       cx={node.x} cy={node.y} r={22}
