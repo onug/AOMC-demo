@@ -1,0 +1,29 @@
+# Docker Compose override for vendor plugins.
+#
+# Usage:
+#   docker compose -f docker-compose.yml -f docker-compose.vendor.yml up --build -d
+#   (or use: make vendor-up)
+#
+# Add your vendor service below and set the corresponding VENDOR_*_URL and
+# VENDOR_*_NAME environment variables on aomc-control-plane.
+#
+# See vendors/README.md for the full integration guide.
+
+services:
+  # --- Example vendor container (starter template) ---
+  vendor-example:
+    build: ./vendors/starter-python
+    networks:
+      - net-dmz
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8100/healthz')"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # --- Configure control-plane to use vendor(s) ---
+  aomc-control-plane:
+    environment:
+      VENDOR_IDENTITY_ATTESTATION_URL: http://vendor-example:8100/check
+      VENDOR_IDENTITY_ATTESTATION_NAME: "Example Vendor"

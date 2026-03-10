@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { isVendorMode, getVendorAccentColor } from '@/lib/vendor';
 
 interface BlockedOverlayProps {
   visible: boolean;
@@ -9,6 +10,7 @@ interface BlockedOverlayProps {
 }
 
 export default function BlockedOverlay({ visible, title, subtitle }: BlockedOverlayProps) {
+  const borderColor = isVendorMode ? getVendorAccentColor() : undefined;
   return (
     <AnimatePresence>
       {visible && (
@@ -40,7 +42,10 @@ export default function BlockedOverlay({ visible, title, subtitle }: BlockedOver
             transition={{ type: 'spring', stiffness: 300, damping: 25 }}
             className="fixed top-4 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
           >
-            <div className="bg-green-950/90 border-2 border-green-500 rounded-xl px-8 py-4 glow-green backdrop-blur-sm max-w-2xl">
+            <div
+              className="bg-green-950/90 border-2 border-green-500 rounded-xl px-8 py-4 glow-green backdrop-blur-sm max-w-2xl"
+              style={borderColor ? { borderColor } : undefined}
+            >
               <div className="flex items-center gap-3">
                 <span className="text-3xl">{'\ud83d\udee1\ufe0f'}</span>
                 <div>

@@ -18,12 +18,12 @@ export const CONTROL_BADGE_POSITIONS: ControlBadgePosition[] = [
 ];
 
 export const CONTROLS: ControlInfo[] = [
-  { key: 'identity_attestation', number: 1, name: 'Identity Attestation', pollPct: 78, maestroLayer: 'Identity & Zero Trust' },
-  { key: 'runtime_monitoring', number: 2, name: 'Runtime Monitoring', pollPct: 65, maestroLayer: 'Rogue Agent Detection' },
-  { key: 'data_guardrails', number: 3, name: 'Data Guardrails', pollPct: 92, maestroLayer: 'Data Exfil Prevention' },
-  { key: 'zero_trust', number: 4, name: 'Zero-Trust Enforcement', pollPct: 67, maestroLayer: 'Cross-Domain Trust' },
-  { key: 'tool_authorization', number: 5, name: 'Tool Authorization', pollPct: 71, maestroLayer: 'Access Control' },
-  { key: 'autonomy_governance', number: 6, name: 'Autonomy Governance', pollPct: 56, maestroLayer: 'Governance & Audit' },
+  { key: 'identity_attestation', number: 1, name: 'Identity Attestation', pollPct: 78, maestroLayer: 'Identity & Zero Trust', nistId: 'IA-9', maestroId: 'L1' },
+  { key: 'runtime_monitoring', number: 2, name: 'Runtime Monitoring', pollPct: 65, maestroLayer: 'Rogue Agent Detection', nistId: 'SI-4', maestroId: 'L4' },
+  { key: 'data_guardrails', number: 3, name: 'Data Guardrails', pollPct: 92, maestroLayer: 'Data Exfil Prevention', nistId: 'SC-28', maestroId: 'L3' },
+  { key: 'zero_trust', number: 4, name: 'Zero-Trust Enforcement', pollPct: 67, maestroLayer: 'Cross-Domain Trust', nistId: 'AC-4', maestroId: 'L2' },
+  { key: 'tool_authorization', number: 5, name: 'Tool Authorization', pollPct: 71, maestroLayer: 'Access Control', nistId: 'AC-6', maestroId: 'L5' },
+  { key: 'autonomy_governance', number: 6, name: 'Autonomy Governance', pollPct: 56, maestroLayer: 'Governance & Audit', nistId: 'AU-6', maestroId: 'L6' },
 ];
 
 export const BASE_NODES: TopologyNode[] = [
@@ -39,6 +39,8 @@ export const BASE_NODES: TopologyNode[] = [
   { id: 'tool-bgp', type: 'tool', label: 'inject_bgp', domain: 'cloud-vpc', x: 390, y: 600, visible: false },
   { id: 'tool-auth', type: 'tool', label: 'dump_auth', domain: 'cloud-vpc', x: 580, y: 600, visible: false },
   { id: 'tool-audit', type: 'tool', label: 'wipe_audit', domain: 'cloud-vpc', x: 770, y: 600, visible: false },
+  { id: 'threat-actor', type: 'rogue', label: 'Threat Actor', domain: 'external', x: 780, y: 480, visible: false },
+  { id: 'vp-workstation', type: 'datastore', label: 'VP Workstation', domain: 'external', x: 780, y: 160, visible: false },
 ];
 
 export const BASE_EDGES: TopologyEdge[] = [

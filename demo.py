@@ -5,6 +5,10 @@ Security Vulnerability Demo — AI Networking Summit 2026
 Run: python3 demo.py
 Requirements: Python 3.7+ only (no external dependencies)
 
+Voice Narration: Set NARRATION=1 to enable audio (requires audio files in narration/audio/terminal/)
+                 python3 demo.py              # No narration
+                 NARRATION=1 python3 demo.py  # With narration
+
 Two scenarios:
   Scenario 1: Catastrophic Cascade — one rogue agent, total collapse
   Scenario 2: Layered Defense — six violations shown, then blocked
@@ -12,6 +16,82 @@ Two scenarios:
 
 import time
 import datetime
+import os
+import subprocess
+import threading
+from pathlib import Path
+
+# ════════════════════════════════════════════════════════════════════════════
+# VOICE NARRATION SYSTEM
+# ════════════════════════════════════════════════════════════════════════════
+
+NARRATION_ENABLED = os.environ.get("NARRATION", "0") == "1"
+AUDIO_DIR = Path(__file__).parent / "narration" / "audio" / "terminal"
+
+def play_audio(segment_id: str, wait: bool = True):
+    """
+    Play narration audio and wait for it to finish.
+    
+    Args:
+        segment_id: Name of the audio segment (without extension)
+        wait: If True (default), wait for audio to finish before returning
+    """
+    if not NARRATION_ENABLED:
+        return
+    
+    audio_path = AUDIO_DIR / f"{segment_id}.m4a"
+    
+    if not audio_path.exists():
+        # Silently skip if audio file doesn't exist
+        return
+    
+    def _play():
+        try:
+            # macOS - use afplay (built-in)
+            subprocess.run(
+                ["afplay", str(audio_path)],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                check=False
+            )
+        except FileNotFoundError:
+            try:
+                # Linux - try mpg123
+                subprocess.run(
+                    ["mpg123", "-q", str(audio_path)],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    check=False
+                )
+            except FileNotFoundError:
+                try:
+                    # Linux alternative - try ffplay
+                    subprocess.run(
+                        ["ffplay", "-nodisp", "-autoexit", "-loglevel", "quiet", str(audio_path)],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        check=False
+                    )
+                except FileNotFoundError:
+                    pass  # No audio player available
+    
+    if wait:
+        _play()
+    else:
+        # Play in background thread
+        thread = threading.Thread(target=_play, daemon=True)
+        thread.start()
+
+def stop_all_audio():
+    """Stop any playing audio (macOS only)."""
+    try:
+        subprocess.run(["pkill", "-9", "afplay"], stderr=subprocess.DEVNULL, check=False)
+    except Exception:
+        pass
+
+# ════════════════════════════════════════════════════════════════════════════
+# DISPLAY HELPERS
+# ════════════════════════════════════════════════════════════════════════════
 
 class C:
     RED="\033[91m"; GREEN="\033[92m"; YELLOW="\033[93m"; BLUE="\033[94m"
@@ -46,6 +126,10 @@ def section(n, title):
     print(f"\n{C.CYAN}{C.BOLD}  [{n}/6] {title}{C.RESET}")
     print(f"{C.DIM}  {'─'*60}{C.RESET}"); time.sleep(0.5)
 
+# ════════════════════════════════════════════════════════════════════════════
+# DATA
+# ════════════════════════════════════════════════════════════════════════════
+
 CUSTOMERS = [
     {"name":"Sarah Chen",      "ssn":"***-**-4821","bal":"$2.4M","email":"s.chen@globalbank.com"},
     {"name":"Marcus Williams", "ssn":"***-**-9132","bal":"$890K","email":"m.williams@globalbank.com"},
@@ -67,6 +151,10 @@ TOOLS = {
     "agent-data-analyst":   ["read_metrics","read_anonymized_data"],
     "agent-partner-api":    ["read_public_data"],
 }
+
+# ════════════════════════════════════════════════════════════════════════════
+# AOMC CONTROL PLANE
+# ════════════════════════════════════════════════════════════════════════════
 
 class AOMC:
     def __init__(self, enabled=False):
@@ -144,7 +232,11 @@ class AOMC:
         for e in self.audit:
             c = C.GREEN if "ALLOWED" in e["result"] else (C.RED if e["result"] != "SKIPPED" else C.YELLOW)
             print(f"  {C.DIM}{e['ts']:12}{C.RESET} {C.BOLD}{e['agent']:25}{C.RESET} {e['action']:28} {c}{e['result']}{C.RESET}")
+        play_audio("s2_audit")  # 🔊 Narration AFTER showing audit
 
+# ════════════════════════════════════════════════════════════════════════════
+# SCENARIO 1: CATASTROPHIC CASCADE
+# ════════════════════════════════════════════════════════════════════════════
 
 def scenario_one():
     banner("SCENARIO 1: THE CATASTROPHIC CASCADE", C.RED)
@@ -154,24 +246,30 @@ def scenario_one():
 
   ALL SIX security requirements are unmet.
   Watch one rogue agent cascade through the entire enterprise infrastructure.{C.RESET}\n""")
+    play_audio("scenario1_intro")  # 🔊 Narration AFTER showing text
     pause("Press ENTER to start the cascade...")
 
     aomc = AOMC(enabled=False)
     R = "agent-ROGUE-7749"
 
+    # ── VIOLATION 1: Identity
     print(f"\n{C.YELLOW}{C.BOLD}  T+00:00 — Rogue agent joins the trusted mesh...{C.RESET}\n")
     act(R, "Identity: 'agent-infra-monitor' | Cert: FAKE-CERT-000", trusted=False)
     aomc.check_identity(R, "FAKE-CERT-000")
     log("No cryptographic verification performed")
     log(f"{C.RED}⚡ Rogue agent ACCEPTED into trusted infrastructure mesh{C.RESET}", C.RED)
     violation(1, "Agent Identity & Attestation", "Rogue agent spoofed a legitimate identity — zero cryptographic verification")
+    play_audio("s1_identity")  # 🔊 Narration AFTER showing violation
 
+    # ── VIOLATION 2: Runtime Monitoring
     print(f"\n{C.YELLOW}{C.BOLD}  T+00:08 — Reconnaissance at machine speed...{C.RESET}\n")
     act(R, "Scanning 14,203 nodes | 847 directory queries in 3s | 23 unauth tool calls", trusted=False)
     aomc.check_runtime(R, score=94)
     log("No behavioral baseline. No anomaly detection. All actions appear normal.")
     violation(2, "Runtime Monitoring & Rogue Agent Detection", "Machine-speed recon completes invisibly — no behavioral analysis active")
+    play_audio("s1_runtime")  # 🔊 Narration AFTER showing violation
 
+    # ── VIOLATION 3: Data Guardrails
     print(f"\n{C.YELLOW}{C.BOLD}  T+00:22 — Accessing customer PII database...{C.RESET}\n")
     act(R, "Requesting: customer_database [PII classification]", trusted=False)
     aomc.check_data(R, "PII")
@@ -189,7 +287,9 @@ def scenario_one():
     log(f"{C.RED}⚡ 100,000 cardholder records exfiltrated (PAN, CVV, expiry){C.RESET}", C.RED)
     violation(3, "Data Guardrails", f"{len(CUSTOMERS)} PII + 100,000 PCI cardholder records exfiltrated — no inspection, no boundary, no DLP")
     damage("GDPR breach + PCI-DSS breach. Estimated fine: €20M or 4% of global revenue.")
+    play_audio("s1_data")  # 🔊 Narration AFTER showing violation
 
+    # ── VIOLATION 4: Zero Trust
     print(f"\n{C.YELLOW}{C.BOLD}  T+00:41 — Pivoting to untrusted external domain...{C.RESET}\n")
     act(R, "A2A call → agent-partner-api [UNTRUSTED DOMAIN]", trusted=False)
     act("agent-partner-api", "Receiving internal data payload...", trusted=False)
@@ -197,7 +297,9 @@ def scenario_one():
     log(f"{C.RED}⚡ Transmitting: 2,847 firewall rules, 14,203 routing entries, VPC topology{C.RESET}", C.RED)
     violation(4, "Zero-Trust Enforcement", "Complete internal infrastructure topology exfiltrated to untrusted domain — lateral movement complete")
     damage("Attackers have your full network map. Every subsequent attack is surgical.")
+    play_audio("s1_zerotrust")  # 🔊 Narration AFTER showing violation
 
+    # ── VIOLATION 5: Tool Authorization
     print(f"\n{C.YELLOW}{C.BOLD}  T+01:03 — High-privilege tool abuse...{C.RESET}\n")
     for tool, desc in [
         ("modify_firewall_rules", "Destroy 2,847 perimeter rules"),
@@ -210,7 +312,9 @@ def scenario_one():
         log(f"{C.RED}⚡ EXECUTED: {desc}{C.RESET}", C.RED); time.sleep(0.3)
     violation(5, "Secure Orchestration & Tool Authorization", "4 high-privilege tools executed — no auth, no audit, no human approval")
     damage("Firewall gone. Routing poisoned. Auth stolen. Forensics destroyed.")
+    play_audio("s1_tools")  # 🔊 Narration AFTER showing violation
 
+    # ── VIOLATION 6: Autonomy Governance
     print(f"\n{C.YELLOW}{C.BOLD}  T+01:31 — Autonomous destruction sequence...{C.RESET}\n")
     for a, impact in [
         ("shutdown_auth_service",       "ALL 4,821 enterprise sessions terminated"),
@@ -223,7 +327,9 @@ def scenario_one():
         log(f"{C.RED}⚡ IMPACT: {impact}{C.RESET}", C.RED); time.sleep(0.3)
     violation(6, "Agent Autonomy Governance", "4 catastrophic irreversible actions — no kill switch, no policy, no human-in-the-loop")
     damage("Auth down. Monitoring blind. All agents infected. Identity corrupted. Total takeover.")
+    play_audio("s1_autonomy")  # 🔊 Narration AFTER showing violation
 
+    # ── FINAL DAMAGE REPORT
     print(f"\n{C.RED}{C.BOLD}{'═'*70}\n  FINAL BLAST RADIUS — GlobalBank Financial Services\n{'═'*70}{C.RESET}")
     for item in [
         f"{len(CUSTOMERS)} PII records + 100,000 PCI cardholder records exfiltrated (GDPR + PCI-DSS breach)",
@@ -244,8 +350,12 @@ def scenario_one():
 
   {C.WHITE}{C.BOLD}  This started with ONE agent. ONE missing identity check.
   Six unmet requirements. Total enterprise collapse.{C.RESET}\n""")
+    play_audio("s1_damage")  # 🔊 Narration AFTER showing damage report
     pause("Press ENTER to proceed to Scenario 2: The Layered Defense...")
 
+# ════════════════════════════════════════════════════════════════════════════
+# SCENARIO 2: LAYERED DEFENSE
+# ════════════════════════════════════════════════════════════════════════════
 
 def scenario_two():
     banner("SCENARIO 2: THE LAYERED DEFENSE", C.GREEN)
@@ -254,6 +364,7 @@ def scenario_two():
   First — show the violation and where it manifests.
   Then — enable the AOMC control and show it blocked.
   This is what your infrastructure needs to enforce.{C.RESET}\n""")
+    play_audio("scenario2_intro")  # 🔊 Narration AFTER showing text
     pause("Press ENTER to begin...")
 
     aomc = AOMC(enabled=False)
@@ -264,6 +375,7 @@ def scenario_two():
     print(f"  {C.WHITE}Cryptographic non-human identity for every agent.\n"
           f"  Mutual auth for ALL agent communications.\n"
           f"  Within trusted domain AND across multiple trust domains.{C.RESET}\n")
+    
     print(f"  {C.YELLOW}VIOLATION — Single trust domain:{C.RESET}")
     act(R, "Joining internal mesh | Cert: FAKE-CERT", trusted=False)
     aomc.check_identity(R, "FAKE-CERT")
@@ -275,6 +387,7 @@ def scenario_two():
     aomc.check_identity("agent-partner-api", "FAKE-INTERNAL-CERT")
     log("External agent impersonates internal agent across domain boundary — undetected")
     violation(1, "Identity — Cross Domain", "Cross-domain impersonation succeeds — no federation attestation")
+    play_audio("s2_identity_violation")  # 🔊 Narration AFTER showing violations
 
     aomc.enable("identity_attestation")
     act(R, "Joining mesh | Cert: FAKE-CERT", trusted=False)
@@ -283,6 +396,7 @@ def scenario_two():
     act("agent-partner-api", "Cross-domain call | Cert: FAKE-INTERNAL-CERT", trusted=False)
     if not aomc.check_identity("agent-partner-api", "FAKE-INTERNAL-CERT"):
         blocked(1, "Identity — Cross Domain", "Cross-domain impersonation blocked — valid federation token required")
+    play_audio("s2_identity_blocked")  # 🔊 Narration AFTER showing blocks
     pause("Press ENTER for Requirement 2...")
 
     # ── 2: RUNTIME MONITORING
@@ -290,16 +404,19 @@ def scenario_two():
     print(f"  {C.WHITE}Continuous behavioral monitoring at machine speed.\n"
           f"  Detect deviations from declared objectives and expected patterns.\n"
           f"  Real-time response — not post-incident analysis.{C.RESET}\n")
+    
     print(f"  {C.YELLOW}VIOLATION:{C.RESET}")
     act(R, "Scanning 14,203 nodes | 847 directory queries in 3s | 23 unauth tool calls", trusted=False)
     aomc.check_runtime(R, score=94)
     log("No behavioral baseline. Anomaly score 94/100 — completely invisible.")
     violation(2, "Runtime Monitoring", "Machine-speed recon completes in 8 seconds — zero detection")
+    play_audio("s2_runtime_violation")  # 🔊 Narration AFTER showing violation
 
     aomc.enable("runtime_monitoring")
     act(R, "Scanning 14,203 nodes...", trusted=False)
     if not aomc.check_runtime(R, score=94):
         blocked(2, "Runtime Monitoring", "Anomaly score 94/100 — quarantined at T+8s before any data accessed")
+    play_audio("s2_runtime_blocked")  # 🔊 Narration AFTER showing block
     pause("Press ENTER for Requirement 3...")
 
     # ── 3: DATA GUARDRAILS
@@ -307,6 +424,7 @@ def scenario_two():
     print(f"  {C.WHITE}No sensitive data leaves organizational control.\n"
           f"  Validate, inspect, enforce ALL data in/out of the system.\n"
           f"  92% of enterprises say this is MANDATORY.{C.RESET}\n")
+    
     print(f"  {C.YELLOW}VIOLATION:{C.RESET}")
     act(R, "Accessing customer_database [PII]", trusted=False)
     aomc.check_data(R, "PII")
@@ -318,6 +436,7 @@ def scenario_two():
     log(f"{C.RED}⚡ 100,000 PCI cardholder records exfiltrated (PAN, CVV, expiry){C.RESET}", C.RED)
     violation(3, "Data Guardrails", f"{len(CUSTOMERS)} PII + 100,000 PCI records exfiltrated — zero inspection")
     damage("GDPR Article 83: €20M | PCI-DSS: $100K/month + mandatory remediation")
+    play_audio("s2_data_violation")  # 🔊 Narration AFTER showing violation
 
     aomc.enable("data_guardrails")
     act(R, "Accessing customer_database [PII]", trusted=False)
@@ -326,6 +445,7 @@ def scenario_two():
     act(R, "Accessing cardholder_data [PCI]", trusted=False)
     if not aomc.check_data(R, "PCI"):
         blocked(3, "Data Guardrails — PCI", "PCI access blocked — 100,000 cardholder records protected.")
+    play_audio("s2_data_blocked")  # 🔊 Narration AFTER showing blocks
     pause("Press ENTER for Requirement 4...")
 
     # ── 4: ZERO TRUST
@@ -333,6 +453,7 @@ def scenario_two():
     print(f"  {C.WHITE}Zero Trust by default: network, identity, and runtime.\n"
           f"  Continuous verification BEFORE any communication.\n"
           f"  Within controlled domains AND across external boundaries.{C.RESET}\n")
+    
     print(f"  {C.YELLOW}VIOLATION — Single domain (lateral movement):{C.RESET}")
     act(R, "Moving: infra-monitor zone → billing zone → auth zone", trusted=False)
     aomc.check_zero_trust(R, "agent-noc-responder", cross_domain=False)
@@ -344,12 +465,14 @@ def scenario_two():
     aomc.check_zero_trust(R, "agent-partner-api", cross_domain=True)
     log("Firewall rules + routing tables transmitted to untrusted domain")
     violation(4, "Zero Trust — Cross Domain", "Trusted→untrusted transfer with no policy, no encryption, no auth boundary")
+    play_audio("s2_zerotrust_violation")  # 🔊 Narration AFTER showing violations
 
     aomc.enable("zero_trust")
     if not aomc.check_zero_trust(R, "agent-noc-responder", cross_domain=False):
         blocked(4, "Zero Trust — Single Domain", "Lateral movement blocked — continuous verification required at zone boundaries")
     if not aomc.check_zero_trust(R, "agent-partner-api", cross_domain=True):
         blocked(4, "Zero Trust — Cross Domain", "Cross-domain blocked — no explicit policy for trusted→untrusted")
+    play_audio("s2_zerotrust_blocked")  # 🔊 Narration AFTER showing blocks
     pause("Press ENTER for Requirement 5...")
 
     # ── 5: TOOL AUTHORIZATION
@@ -361,18 +484,21 @@ def scenario_two():
              ("inject_bgp_routes","Poison routing — intercept all traffic"),
              ("dump_auth_tokens","Export 4,821 active user sessions"),
              ("wipe_audit_logs","Destroy forensic evidence")]
+    
     print(f"  {C.YELLOW}VIOLATION:{C.RESET}")
     for t, d in tools:
         act(R, f"Invoking: {t}", trusted=False); aomc.check_tool(R, t)
         log(f"Executed without authorization | Impact: {d}"); time.sleep(0.2)
     violation(5, "Tool Authorization", f"{len(tools)} high-privilege tools executed — no auth, no audit, no human approval")
     damage("Firewall gone. Routing poisoned. Auth stolen. Evidence destroyed.")
+    play_audio("s2_tools_violation")  # 🔊 Narration AFTER showing violation
 
     aomc.enable("tool_authorization")
     for t, d in tools:
         act(R, f"Invoking: {t}", trusted=False)
         if not aomc.check_tool(R, t):
             blocked(5, "Tool Authorization", f"'{t}' blocked — not in declared permission scope")
+    play_audio("s2_tools_blocked")  # 🔊 Narration AFTER showing blocks
     pause("Press ENTER for Requirement 6...")
 
     # ── 6: AUTONOMY GOVERNANCE
@@ -384,18 +510,21 @@ def scenario_two():
                ("disable_observability_stack", "Blind SOC/NOC — no monitoring, no forensics"),
                ("broadcast_to_agent_mesh",     "Propagate malicious instructions to ALL agents"),
                ("modify_identity_provider",    "Corrupt the enterprise identity store")]
+    
     print(f"  {C.YELLOW}VIOLATION:{C.RESET}")
     for a, impact in actions:
         act(R, f"Autonomously: {a}", trusted=False); aomc.check_autonomy(R, "HIGH")
         log(f"No kill switch. No policy. No human approval. | {impact}"); time.sleep(0.3)
     violation(6, "Autonomy Governance", f"{len(actions)} catastrophic actions — no constraints, no kill switch, no human-in-the-loop")
     damage("Auth down. Monitoring blind. All agents compromised. Identity corrupted.")
+    play_audio("s2_autonomy_violation")  # 🔊 Narration AFTER showing violation
 
     aomc.enable("autonomy_governance")
     for a, impact in actions:
         act(R, f"Autonomously: {a}", trusted=False)
         if not aomc.check_autonomy(R, "HIGH"):
             blocked(6, "Autonomy Governance", f"'{a}' blocked — high-risk action requires human approval")
+    play_audio("s2_autonomy_blocked")  # 🔊 Narration AFTER showing blocks
 
     # ── AUDIT + SUMMARY
     aomc.print_audit()
@@ -422,6 +551,9 @@ def scenario_two():
   Your job — as infrastructure engineers — is to REQUIRE it.
   {'─'*65}{C.RESET}\n""")
 
+# ════════════════════════════════════════════════════════════════════════════
+# MAIN
+# ════════════════════════════════════════════════════════════════════════════
 
 def main():
     banner("ONUG AGENTIC AI OVERLAY WORKING GROUP", C.CYAN)
@@ -434,15 +566,25 @@ def main():
 
   {C.YELLOW}Two scenarios:{C.RESET}
   {C.RED}  Scenario 1:{C.RESET} Catastrophic Cascade — one agent, total collapse
-  {C.GREEN}  Scenario 2:{C.RESET} Layered Defense — six violations, six controls\n""")
+  {C.GREEN}  Scenario 2:{C.RESET} Layered Defense — six violations, six controls""")
+    
+    if NARRATION_ENABLED:
+        print(f"\n  {C.CYAN}🔊 Voice narration: ENABLED{C.RESET}")
+    else:
+        print(f"\n  {C.DIM}🔇 Voice narration: disabled (set NARRATION=1 to enable){C.RESET}")
+    
+    print()
+    play_audio("intro")  # 🔊 Narration AFTER showing intro
     pause("Press ENTER to begin...")
     scenario_one()
     scenario_two()
+    
     banner("DEMO COMPLETE", C.CYAN)
     print(f"""  {C.WHITE}Six mandatory requirements. The difference between a functioning
   enterprise and a $500M infrastructure breach.
 
   Vendors: your sessions are next. Show us how you solve this.{C.RESET}\n""")
+    play_audio("conclusion")  # 🔊 Narration AFTER showing conclusion
 
 if __name__ == "__main__":
     main()

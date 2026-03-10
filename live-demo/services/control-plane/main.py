@@ -11,6 +11,7 @@ import registry
 import audit
 import events
 import controls
+import vendor_proxy
 
 app = FastAPI(title="AOMC Control Plane")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
@@ -26,6 +27,12 @@ async def startup():
     await audit.init(pool)
     await controls.init(pool)
     await events.init(REDIS_URL)
+    await vendor_proxy.init()
+
+
+@app.on_event("shutdown")
+async def shutdown():
+    await vendor_proxy.close()
 
 
 # --- Controls ---
@@ -74,6 +81,12 @@ async def set_all_controls(enabled: bool):
         "message": f"All controls {'ENABLED' if enabled else 'DISABLED'}",
     })
     return await controls.get_all_controls()
+
+
+# --- Vendors ---
+@app.get("/api/vendors")
+async def get_vendors():
+    return vendor_proxy.get_all_vendors()
 
 
 # --- Check endpoints (called by gateway) ---

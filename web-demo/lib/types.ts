@@ -34,6 +34,8 @@ export interface ControlInfo {
   name: string;
   pollPct: number;
   maestroLayer: string;
+  nistId: string;
+  maestroId: string;
 }
 
 export type EventType = 'action' | 'log' | 'violation' | 'blocked' | 'damage' | 'enable' | 'info';
@@ -90,6 +92,7 @@ export interface DamageMetrics {
   recoveryTime: string;
   sessionsHijacked: number;
   firewallRulesDestroyed: number;
+  encryptedSystems: number;
 }
 
 export interface AuditEntry {
@@ -120,6 +123,29 @@ export interface TopologyState {
   nodes: TopologyNode[];
   edges: TopologyEdge[];
 }
+
+// ─── Vendor Plugin Types ─────────────────────────────
+
+export interface VendorControlOverride {
+  productName: string;
+  logoUrl?: string;
+  introSubtitle?: string;
+  enableTitle?: string;
+  blockedSubtitle?: string;
+  blockedEvents?: string[];
+}
+
+export interface VendorConfig {
+  name: string;
+  tagline?: string;
+  website?: string;
+  logoUrl?: string;
+  accentColor?: string;
+  controls: Partial<Record<ControlKey, VendorControlOverride>>;
+  finaleSubtitle?: string;
+}
+
+// ─── Demo State ──────────────────────────────────────
 
 export interface DemoState {
   currentStep: number;

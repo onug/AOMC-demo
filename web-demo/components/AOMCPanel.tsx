@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import { ControlKey } from '@/lib/types';
 import { CONTROLS } from '@/lib/data';
+import { vendorCoversControl, getVendorProductForControl, getVendorAccentColor, isVendorMode } from '@/lib/vendor';
 
 interface AOMCPanelProps {
   controls: Record<ControlKey, boolean>;
@@ -68,6 +69,20 @@ export default function AOMCPanel({ controls }: AOMCPanelProps) {
                   </span>
                   <span className="text-[9px] text-gray-600 uppercase">{ctrl.maestroLayer}</span>
                 </div>
+                <div className="text-[8px] font-[family-name:var(--font-mono)] text-gray-600 mt-0.5">
+                  NIST {ctrl.nistId} · MAESTRO {ctrl.maestroId}
+                </div>
+                {isVendorMode && vendorCoversControl(ctrl.key) && (
+                  <div
+                    className="mt-0.5 text-[9px] font-bold px-1.5 py-0.5 rounded-full truncate"
+                    style={{
+                      backgroundColor: `${getVendorAccentColor()}20`,
+                      color: getVendorAccentColor(),
+                    }}
+                  >
+                    {getVendorProductForControl(ctrl.key)}
+                  </div>
+                )}
               </div>
 
               {isOn && (

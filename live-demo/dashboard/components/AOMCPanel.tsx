@@ -1,16 +1,17 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ControlKey } from '@/lib/types';
+import { ControlKey, VendorInfo } from '@/lib/types';
 import { CONTROLS } from '@/lib/data';
 
 interface AOMCPanelProps {
   controls: Record<ControlKey, boolean>;
   onToggle: (key: ControlKey) => void;
   loading?: boolean;
+  vendors?: Record<string, VendorInfo>;
 }
 
-export default function AOMCPanel({ controls, onToggle, loading }: AOMCPanelProps) {
+export default function AOMCPanel({ controls, onToggle, loading, vendors = {} }: AOMCPanelProps) {
   const anyActive = Object.values(controls).some(Boolean);
 
   return (
@@ -69,6 +70,14 @@ export default function AOMCPanel({ controls, onToggle, loading }: AOMCPanelProp
                     {ctrl.pollPct}%
                   </span>
                   <span className="text-[9px] text-gray-600 uppercase">{ctrl.maestroLayer}</span>
+                  {vendors[ctrl.key] && (
+                    <span className="text-[9px] text-purple-400 bg-purple-500/10 px-1 rounded">
+                      {vendors[ctrl.key].name}
+                    </span>
+                  )}
+                </div>
+                <div className="text-[8px] font-[family-name:var(--font-mono)] text-gray-600 mt-0.5">
+                  NIST {ctrl.nistId} · MAESTRO {ctrl.maestroId}
                 </div>
               </div>
 

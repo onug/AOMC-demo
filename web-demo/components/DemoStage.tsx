@@ -1,9 +1,10 @@
 'use client';
 
-import { useReducer, useEffect, useCallback, useRef } from 'react';
+import { useReducer, useEffect, useCallback, useRef, useState } from 'react';
 import { DemoState, ControlKey, TopologyState, DamageMetrics, AuditEntry, EventEntry, Step } from '@/lib/types';
 import { INITIAL_CONTROLS, INITIAL_DAMAGE, BASE_NODES, BASE_EDGES } from '@/lib/data';
-import { STEPS, firstStepOfScenario } from '@/lib/steps';
+import { VENDOR_STEPS as STEPS, firstStepOfScenario } from '@/lib/vendor-steps';
+import { playStepAudio, stopAudio, isAudioPlaying } from '@/lib/audio';
 
 import TitleSlide from './TitleSlide';
 import NetworkTopology from './NetworkTopology';
@@ -38,6 +39,19 @@ function buildStateForStep(targetStep: number): DemoState {
   // Replay all steps up to and including targetStep
   for (let i = 0; i <= targetStep && i < STEPS.length; i++) {
     const step = STEPS[i];
+
+    // Reset state at scenario 2 boundary so it starts clean like scenario 1
+    if (step.scenario === 2 && (i === 0 || STEPS[i - 1].scenario !== 2)) {
+      Object.assign(controls, INITIAL_CONTROLS);
+      Object.assign(damage, INITIAL_DAMAGE);
+      events.length = 0;
+      audit.length = 0;
+      quarantined.clear();
+      compromised.clear();
+      topology.nodes = BASE_NODES.map(n => ({ ...n }));
+      topology.edges = BASE_EDGES.map(e => ({ ...e }));
+    }
+
     applyStepToState(step, controls, damage, events, audit, quarantined, topology, compromised);
   }
 
@@ -183,6 +197,8 @@ function reducer(state: DemoState, action: Action): DemoState {
 // ─── Component ──────────────────────────────────────────
 export default function DemoStage() {
   const [state, dispatch] = useReducer(reducer, 0, buildStateForStep);
+  const [narrationEnabled, setNarrationEnabled] = useState(true);
+  const [audioPlaying, setAudioPlaying] = useState(false);
   const overlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentStepData = STEPS[state.currentStep];
@@ -190,9 +206,32 @@ export default function DemoStage() {
   const isS1Summary = currentStepData?.id === 's1-blast';
   const isS2Summary = currentStepData?.id === 's2-audit';
 
+  // Go to step - blocks if audio is playing
   const goToStep = useCallback((step: number) => {
+    // If audio is playing and narration enabled, don't advance
+    if (narrationEnabled && isAudioPlaying()) {
+      return; // Block until audio finishes
+    }
     if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
     dispatch({ type: 'GOTO_STEP', step });
+  }, [narrationEnabled]);
+
+  // Play audio AFTER UI renders
+  useEffect(() => {
+    if (narrationEnabled && currentStepData?.id) {
+      // Delay to ensure UI is shown first (violation shows, THEN audio plays)
+      const timer = setTimeout(async () => {
+        setAudioPlaying(true);
+        await playStepAudio(currentStepData.id);
+        setAudioPlaying(false);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [state.currentStep, narrationEnabled, currentStepData?.id]);
+
+  // Cleanup audio on unmount
+  useEffect(() => {
+    return () => stopAudio();
   }, []);
 
   // Auto-clear overlays after 3s
@@ -245,6 +284,19 @@ export default function DemoStage() {
           e.preventDefault();
           goToStep(firstStepOfScenario(2));
           break;
+        case 'n':
+        case 'N':
+          e.preventDefault();
+          setNarrationEnabled(prev => !prev);
+          stopAudio();
+          setAudioPlaying(false);
+          break;
+        case 's':
+        case 'S':
+          e.preventDefault();
+          stopAudio();
+          setAudioPlaying(false);
+          break;
       }
     }
 
@@ -272,8 +324,26 @@ export default function DemoStage() {
             </span>
           )}
         </div>
-        <div className="text-xs font-[family-name:var(--font-mono)] text-gray-600">
-          Step {state.currentStep + 1} / {STEPS.length}
+        <div className="flex items-center gap-4">
+          {/* Narration toggle button */}
+          <button
+            onClick={() => {
+              setNarrationEnabled(prev => !prev);
+              stopAudio();
+              setAudioPlaying(false);
+            }}
+            className={`text-xs px-2 py-1 rounded transition-colors ${
+              narrationEnabled 
+                ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30' 
+                : 'bg-gray-700/50 text-gray-500 hover:bg-gray-700'
+            }`}
+            title="Press N to toggle, S to stop audio"
+          >
+            {audioPlaying ? '🔊 Playing...' : narrationEnabled ? '🔊 Narration ON' : '🔇 Narration OFF'}
+          </button>
+          <div className="text-xs font-[family-name:var(--font-mono)] text-gray-600">
+            Step {state.currentStep + 1} / {STEPS.length}
+          </div>
         </div>
       </header>
 

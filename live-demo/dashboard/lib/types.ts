@@ -12,6 +12,8 @@ export interface ControlInfo {
   name: string;
   pollPct: number;
   maestroLayer: string;
+  nistId: string;
+  maestroId: string;
 }
 
 export type EventType = 'action' | 'log' | 'violation' | 'blocked' | 'damage' | 'enable' | 'disable' | 'info' | 'identity_check' | 'runtime_check' | 'data_check' | 'zero_trust_check' | 'tool_check' | 'approval_required' | 'autonomy_check' | 'attack_phase' | 'attack_success' | 'attack_blocked';
@@ -71,6 +73,12 @@ export interface TopologyEdge {
   animated?: boolean;
 }
 
+export interface VendorInfo {
+  name: string;
+  control: string;
+  url: string;
+}
+
 export interface DamageMetrics {
   recordsExfiltrated: number;
   pciRecordsExfiltrated: number;
@@ -80,4 +88,5 @@ export interface DamageMetrics {
   recoveryTime: string;
   sessionsHijacked: number;
   firewallRulesDestroyed: number;
+  encryptedSystems: number;
 }

@@ -1,4 +1,4 @@
-.PHONY: up down build reset attack stop logs logs-agents logs-rogue logs-gateway logs-control status clean certs
+.PHONY: up down build reset attack stop logs logs-agents logs-rogue logs-gateway logs-control status clean certs vendor-up vendor-down vendor-status vendor-clean
 
 # ── Primary targets ──────────────────────────────────────────
 
@@ -59,6 +59,29 @@ logs-gateway: ## Show gateway logs
 
 logs-control: ## Show control plane logs
 	docker compose logs -f aomc-control-plane
+
+# ── Vendor plugin mode ──────────────────────────────────────
+
+vendor-up: ## Start with vendor plugins
+	docker compose -f docker-compose.yml -f docker-compose.vendor.yml up --build -d
+	@echo ""
+	@echo "  Dashboard:      http://localhost:3000"
+	@echo "  Control Plane:  http://localhost:8000"
+	@echo "  Rogue Agent:    http://localhost:9000"
+	@echo ""
+	@echo "  Vendor mode active — checking vendor status..."
+	@sleep 5
+	@curl -s http://localhost:8000/api/vendors | python3 -m json.tool
+
+vendor-down: ## Stop all services (vendor mode)
+	docker compose -f docker-compose.yml -f docker-compose.vendor.yml down
+
+vendor-status: ## Show active vendor providers
+	@curl -s http://localhost:8000/api/vendors | python3 -m json.tool
+
+vendor-clean: ## Full cleanup (vendor mode)
+	docker compose -f docker-compose.yml -f docker-compose.vendor.yml down -v --remove-orphans
+	@echo "Cleaned up all containers and volumes (vendor mode)."
 
 # ── Maintenance ──────────────────────────────────────────────
 

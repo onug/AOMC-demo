@@ -74,6 +74,12 @@ export async function resetState(): Promise<void> {
   return fetchJSON(`${getBaseUrl()}/api/reset`, { method: 'POST' });
 }
 
+// --- Vendors ---
+
+export async function getVendors(): Promise<Record<string, { name: string; control: string; url: string }>> {
+  return fetchJSON(`${getBaseUrl()}/api/vendors`);
+}
+
 // --- Agents ---
 
 export async function getAgents(): Promise<Array<Record<string, unknown>>> {

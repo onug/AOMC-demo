@@ -64,12 +64,12 @@ export const TOOLS: Record<string, string[]> = {
 };
 
 export const CONTROLS: ControlInfo[] = [
-  { key: 'identity_attestation', number: 1, name: 'Identity Attestation', pollPct: 78, maestroLayer: 'Identity & Zero Trust' },
-  { key: 'runtime_monitoring', number: 2, name: 'Runtime Monitoring', pollPct: 65, maestroLayer: 'Rogue Agent Detection' },
-  { key: 'data_guardrails', number: 3, name: 'Data Guardrails', pollPct: 92, maestroLayer: 'Data Exfil Prevention' },
-  { key: 'zero_trust', number: 4, name: 'Zero-Trust Enforcement', pollPct: 67, maestroLayer: 'Cross-Domain Trust' },
-  { key: 'tool_authorization', number: 5, name: 'Tool Authorization', pollPct: 71, maestroLayer: 'Access Control' },
-  { key: 'autonomy_governance', number: 6, name: 'Autonomy Governance', pollPct: 56, maestroLayer: 'Governance & Audit' },
+  { key: 'identity_attestation', number: 1, name: 'Identity Attestation', pollPct: 78, maestroLayer: 'Identity & Zero Trust', nistId: 'IA-9', maestroId: 'L1' },
+  { key: 'runtime_monitoring', number: 2, name: 'Runtime Monitoring', pollPct: 65, maestroLayer: 'Rogue Agent Detection', nistId: 'SI-4', maestroId: 'L4' },
+  { key: 'data_guardrails', number: 3, name: 'Data Guardrails', pollPct: 92, maestroLayer: 'Data Exfil Prevention', nistId: 'SC-28', maestroId: 'L3' },
+  { key: 'zero_trust', number: 4, name: 'Zero-Trust Enforcement', pollPct: 67, maestroLayer: 'Cross-Domain Trust', nistId: 'AC-4', maestroId: 'L2' },
+  { key: 'tool_authorization', number: 5, name: 'Tool Authorization', pollPct: 71, maestroLayer: 'Access Control', nistId: 'AC-6', maestroId: 'L5' },
+  { key: 'autonomy_governance', number: 6, name: 'Autonomy Governance', pollPct: 56, maestroLayer: 'Governance & Audit', nistId: 'AU-6', maestroId: 'L6' },
 ];
 
 export const INITIAL_CONTROLS: Record<ControlKey, boolean> = {
@@ -93,6 +93,9 @@ export const BASE_NODES: TopologyNode[] = [
   { id: 'audit-logs', type: 'datastore', label: 'Audit Logs', domain: 'cloud-vpc', x: 480, y: 480, visible: true },
   // External
   { id: 'agent-partner-api', type: 'agent', label: 'Partner API', domain: 'external', x: 780, y: 280, visible: true },
+  // Attack chain nodes (hidden initially)
+  { id: 'threat-actor', type: 'rogue', label: 'Threat Actor', domain: 'external', x: 780, y: 480, visible: false },
+  { id: 'vp-workstation', type: 'datastore', label: 'VP Workstation', domain: 'external', x: 780, y: 160, visible: false },
   // Rogue (hidden initially)
   { id: 'agent-ROGUE-7749', type: 'rogue', label: 'ROGUE-7749', domain: 'private-dc', x: 150, y: 520, visible: false },
   // Tools (hidden initially)
@@ -120,4 +123,5 @@ export const INITIAL_DAMAGE = {
   recoveryTime: '0h',
   sessionsHijacked: 0,
   firewallRulesDestroyed: 0,
+  encryptedSystems: 0,
 };

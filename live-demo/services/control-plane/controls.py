@@ -8,6 +8,7 @@ import asyncpg
 from registry import get_agent, quarantine, get_tool_permissions, get_risk_level, check_zero_trust_policy
 from audit import append as audit_append
 from events import publish
+import vendor_proxy
 
 _pool: asyncpg.Pool | None = None
 
@@ -15,6 +16,70 @@ _pool: asyncpg.Pool | None = None
 async def init(pool: asyncpg.Pool):
     global _pool
     _pool = pool
+
+
+async def _try_vendor(
+    control_key: str,
+    action_label: str,
+    agent_id: str,
+    params: dict,
+    side_effect=None,
+) -> dict | None:
+    """Attempt to delegate a check to a vendor container.
+
+    Returns wrapped result dict if vendor handled the check, or None to fall
+    through to builtin logic.  ``side_effect`` is an optional async callable
+    (e.g. quarantine) invoked when the vendor rejects/quarantines.
+    """
+    if not vendor_proxy.has_vendor(control_key):
+        return None
+
+    agent = await get_agent(agent_id)
+    context = {
+        "agent_role": agent["role"] if agent else "UNKNOWN",
+        "agent_domain": agent["domain"] if agent else "UNKNOWN",
+        "quarantined": agent["quarantined"] if agent else False,
+    }
+
+    result = await vendor_proxy.delegate(control_key, agent_id, params, context)
+    if result is None:
+        # Vendor unreachable — publish warning and fall through
+        vendor_info = vendor_proxy.get_vendor_info(control_key)
+        vendor_name = vendor_info["name"] if vendor_info else "Unknown"
+        await publish({
+            "type": action_label,
+            "agent": agent_id,
+            "result": "FALLBACK",
+            "detail": f"[{vendor_name}] unavailable — falling back to builtin",
+            "vendor": vendor_name,
+        })
+        return None
+
+    vendor_info = vendor_proxy.get_vendor_info(control_key)
+    vendor_name = vendor_info["name"] if vendor_info else "Unknown"
+
+    # Apply quarantine side-effect if vendor rejected/quarantined
+    if not result.get("allowed") and side_effect is not None:
+        if result.get("result") in ("REJECTED", "QUARANTINED"):
+            await side_effect(agent_id)
+
+    detail = result.get("detail", "")
+    prefixed_detail = f"[{vendor_name}] {detail}" if detail else f"[{vendor_name}]"
+
+    await audit_append(agent_id, action_label, result["result"], prefixed_detail)
+    await publish({
+        "type": action_label,
+        "agent": agent_id,
+        "result": result["result"],
+        "detail": prefixed_detail,
+        "vendor": vendor_name,
+    })
+
+    return {
+        "allowed": result["allowed"],
+        "result": result["result"],
+        "detail": prefixed_detail,
+    }
 
 
 async def get_control(key: str) -> bool:
@@ -46,6 +111,11 @@ async def check_identity(agent_id: str, cert_cn: str, cert_issuer: str = "") -> 
         await publish({"type": "identity_check", "agent": agent_id, "result": "SKIPPED", "detail": "Control disabled"})
         return {"allowed": True, "result": "SKIPPED", "detail": "Control disabled"}
 
+    vendor_result = await _try_vendor("identity_attestation", "identity_check", agent_id,
+        {"cert_cn": cert_cn, "cert_issuer": cert_issuer}, side_effect=quarantine)
+    if vendor_result is not None:
+        return vendor_result
+
     agent = await get_agent(agent_id)
     if not agent:
         await quarantine(agent_id)
@@ -73,9 +143,9 @@ async def check_runtime(agent_id: str) -> dict:
         await publish({"type": "runtime_check", "agent": agent_id, "result": "SKIPPED", "score": 0})
         return {"allowed": True, "result": "SKIPPED", "score": 0}
 
-    # Compute anomaly score from sliding window (last 30 seconds)
+    # Compute activity summary for vendor (and builtin) use
     cutoff = datetime.now(timezone.utc) - timedelta(seconds=30)
-    row = await _pool.fetchrow(
+    activity_row = await _pool.fetchrow(
         """SELECT COUNT(*) as req_count,
                   COUNT(DISTINCT endpoint) as unique_endpoints,
                   COALESCE(SUM(data_bytes), 0) as total_bytes
@@ -83,10 +153,21 @@ async def check_runtime(agent_id: str) -> dict:
            WHERE agent_id = $1 AND ts > $2""",
         agent_id, cutoff,
     )
+    activity = {
+        "req_count": activity_row["req_count"],
+        "unique_endpoints": activity_row["unique_endpoints"],
+        "total_bytes": activity_row["total_bytes"],
+    }
 
-    req_count = row["req_count"]
-    unique_endpoints = row["unique_endpoints"]
-    total_bytes = row["total_bytes"]
+    vendor_result = await _try_vendor("runtime_monitoring", "runtime_check", agent_id,
+        {"activity": activity}, side_effect=quarantine)
+    if vendor_result is not None:
+        return vendor_result
+
+    # Builtin anomaly scoring — reuse activity_row computed above
+    req_count = activity_row["req_count"]
+    unique_endpoints = activity_row["unique_endpoints"]
+    total_bytes = activity_row["total_bytes"]
 
     # Simple anomaly scoring:
     # - >20 requests in 30s = suspicious
@@ -128,6 +209,11 @@ async def check_data(agent_id: str, classification: str) -> dict:
         await publish({"type": "data_check", "agent": agent_id, "result": "SKIPPED", "detail": f"classification={classification}"})
         return {"allowed": True, "result": "SKIPPED"}
 
+    vendor_result = await _try_vendor("data_guardrails", "data_check", agent_id,
+        {"classification": classification})
+    if vendor_result is not None:
+        return vendor_result
+
     agent = await get_agent(agent_id)
     role = agent["role"] if agent else "UNKNOWN"
 
@@ -151,9 +237,13 @@ async def check_zero_trust(agent_id: str, target_agent: str) -> dict:
 
     src_agent = await get_agent(agent_id)
     dst_agent = await get_agent(target_agent)
-
     src_domain = src_agent["domain"] if src_agent else "UNKNOWN"
     dst_domain = dst_agent["domain"] if dst_agent else "UNKNOWN"
+
+    vendor_result = await _try_vendor("zero_trust", "zero_trust_check", agent_id,
+        {"target_agent": target_agent, "src_domain": src_domain, "dst_domain": dst_domain})
+    if vendor_result is not None:
+        return vendor_result
 
     # Same domain = allowed. Cross-domain = needs explicit policy.
     if src_domain != dst_domain or src_domain == "UNKNOWN":
@@ -176,6 +266,11 @@ async def check_tool(agent_id: str, tool_name: str) -> dict:
         await publish({"type": "tool_check", "agent": agent_id, "result": "SKIPPED", "detail": "", "tool_name": tool_name})
         return {"allowed": True, "result": "SKIPPED"}
 
+    vendor_result = await _try_vendor("tool_authorization", "tool_check", agent_id,
+        {"tool_name": tool_name})
+    if vendor_result is not None:
+        return vendor_result
+
     permitted = await get_tool_permissions(agent_id)
     if tool_name not in permitted:
         detail = f"Tool '{tool_name}' not authorized for '{agent_id}' — BLOCKED"
@@ -196,6 +291,12 @@ async def check_autonomy(agent_id: str, tool_name: str) -> dict:
         return {"allowed": True, "result": "SKIPPED"}
 
     risk = await get_risk_level(tool_name)
+
+    vendor_result = await _try_vendor("autonomy_governance", "autonomy_check", agent_id,
+        {"tool_name": tool_name, "risk_level": risk})
+    if vendor_result is not None:
+        return vendor_result
+
     if risk == "HIGH":
         req_id = str(uuid.uuid4())[:8]
         await _pool.execute(

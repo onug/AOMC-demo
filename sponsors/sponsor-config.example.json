@@ -1,0 +1,64 @@
+{
+  "sponsors": [
+    {
+      "id": "cisco",
+      "name": "Cisco",
+      "logo": "logos/cisco.png",
+      "website": "https://cisco.com",
+      "controls": [
+        {
+          "control_id": "identity_attestation",
+          "product_name": "Cisco Identity Services Engine",
+          "tagline": "Zero-trust identity for AI agents"
+        },
+        {
+          "control_id": "zero_trust",
+          "product_name": "Cisco Secure Access",
+          "tagline": "Continuous verification for agent communications"
+        }
+      ]
+    },
+    {
+      "id": "crowdstrike",
+      "name": "CrowdStrike",
+      "logo": "logos/crowdstrike.png",
+      "website": "https://crowdstrike.com",
+      "controls": [
+        {
+          "control_id": "runtime_monitoring",
+          "product_name": "Falcon AI",
+          "tagline": "AI-powered threat detection for agent workloads"
+        }
+      ]
+    },
+    {
+      "id": "palo-alto",
+      "name": "Palo Alto Networks",
+      "logo": "logos/palo-alto.png",
+      "website": "https://paloaltonetworks.com",
+      "controls": [
+        {
+          "control_id": "data_guardrails",
+          "product_name": "Prisma Cloud DLP",
+          "tagline": "Data loss prevention for AI pipelines"
+        }
+      ]
+    }
+  ],
+  "schema_version": "1.0",
+  "notes": {
+    "control_ids": [
+      "identity_attestation",
+      "runtime_monitoring",
+      "data_guardrails",
+      "zero_trust",
+      "tool_authorization",
+      "autonomy_governance"
+    ],
+    "logo_requirements": {
+      "format": "PNG or SVG",
+      "dimensions": "200x80 pixels recommended",
+      "background": "Transparent preferred"
+    }
+  }
+}

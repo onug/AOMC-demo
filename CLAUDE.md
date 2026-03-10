@@ -169,3 +169,9 @@ live-demo/
 - **Modify attack sequence**: Edit `services/agents/agent_rogue.py` (phases in `attack_sequence()`)
 - **Update dashboard metrics**: Edit `dashboard/lib/types.ts` (DamageMetrics), `dashboard/components/DashboardShell.tsx` (event handling), `dashboard/components/BlastRadius.tsx` (display)
 - **Change PCI dataset**: Regenerate `db/synthetic_chd.csv` and run `make clean && make up`
+
+### Vendor Customization
+- **Full guide**: See `docs/vendor-guide.md` for how vendors fork the repo and add their logos/products to Scenario 2
+- **Web demo**: Edit `web-demo/lib/vendor-config.ts` — one config file controls branding, control badges, step text, and topology overlay
+- **Live demo**: Copy `live-demo/vendors/starter-python/`, implement check logic, register in `docker-compose.vendor.yml` with `VENDOR_*` env vars
+- **Example config**: `web-demo/lib/vendor-config.cisco.ts` (Cisco HyperShield + Secure Workload, all 6 controls)

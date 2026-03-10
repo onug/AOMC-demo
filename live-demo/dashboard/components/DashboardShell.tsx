@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { ControlKey, LiveEvent, AuditEntry, ApprovalRequest, DamageMetrics, TopologyNode, TopologyEdge } from '@/lib/types';
+import { ControlKey, LiveEvent, AuditEntry, ApprovalRequest, DamageMetrics, TopologyNode, TopologyEdge, VendorInfo } from '@/lib/types';
 import { useEventStream } from '@/lib/ws';
 import * as api from '@/lib/api';
 import { BASE_NODES, BASE_EDGES } from '@/lib/data';
@@ -82,6 +82,7 @@ const INITIAL_DAMAGE: DamageMetrics = {
   recoveryTime: '0h',
   sessionsHijacked: 0,
   firewallRulesDestroyed: 0,
+  encryptedSystems: 0,
 };
 
 export default function DashboardShell() {
@@ -95,6 +96,7 @@ export default function DashboardShell() {
   const [nodes, setNodes] = useState<TopologyNode[]>(BASE_NODES);
   const [edges, setEdges] = useState<TopologyEdge[]>(BASE_EDGES);
   const [loading, setLoading] = useState(false);
+  const [vendors, setVendors] = useState<Record<string, VendorInfo>>({});
   const [compromised, setCompromised] = useState<Map<string, string>>(new Map());
   const [activeEdges, setActiveEdges] = useState<Set<string>>(new Set());
   const edgeTimers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map());
@@ -276,6 +278,7 @@ export default function DashboardShell() {
   // Load initial state
   useEffect(() => {
     api.getControls().then(c => setControls(c as Record<ControlKey, boolean>)).catch(() => {});
+    api.getVendors().then(v => setVendors(v)).catch(() => {});
     api.getAudit().then(entries => {
       setAudit(entries.map((e, i) => ({ ...e, id: i } as unknown as AuditEntry)));
     }).catch(() => {});
@@ -679,7 +682,7 @@ export default function DashboardShell() {
 
         {/* Right sidebar — Controls + Attack + Damage */}
         <div className="w-72 flex-shrink-0 p-2 space-y-2 overflow-y-auto">
-          <AOMCPanel controls={controls} onToggle={handleToggle} loading={loading} />
+          <AOMCPanel controls={controls} onToggle={handleToggle} loading={loading} vendors={vendors} />
           <AttackPanel
             rogueRunning={rogueRunning}
             onLaunch={handleLaunch}

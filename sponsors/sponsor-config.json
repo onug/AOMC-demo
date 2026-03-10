@@ -1,0 +1,33 @@
+{
+  "sponsors": [
+    {
+      "id": "example-sponsor",
+      "name": "Example Security Corp",
+      "logo": "logos/example-sponsor.png",
+      "website": "https://example.com",
+      "controls": [
+        {
+          "control_id": "identity_attestation",
+          "product_name": "Example Identity Shield",
+          "tagline": "Cryptographic agent identity verification"
+        }
+      ]
+    }
+  ],
+  "schema_version": "1.0",
+  "notes": {
+    "control_ids": [
+      "identity_attestation",
+      "runtime_monitoring", 
+      "data_guardrails",
+      "zero_trust",
+      "tool_authorization",
+      "autonomy_governance"
+    ],
+    "logo_requirements": {
+      "format": "PNG or SVG",
+      "dimensions": "200x80 pixels recommended",
+      "background": "Transparent preferred"
+    }
+  }
+}

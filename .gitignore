@@ -11,7 +11,17 @@ __pycache__/
 
 # OS files
 .DS_Store
+**/.DS_Store
 Thumbs.db
+
+# Claude Code
+.claude/
+
+# Root lock file (no root package.json)
+/package-lock.json
+
+# Working group transcripts
+transcript*
 
 # Editor
 *.swp

@@ -1,0 +1,132 @@
+{
+  "metadata": {
+    "demo": "web",
+    "voice": "elevenlabs",
+    "voice_id": "EXAVITQu4vr4xnSDxMaL",
+    "voice_name": "Sarah",
+    "voice_style": "professional, clear, authoritative",
+    "notes": "Web demo uses step-based triggers matching steps.ts"
+  },
+  "segments": [
+    {
+      "id": "title",
+      "step": 0,
+      "text": "Welcome to the ONUG Agentic AI Overlay Security Demo, presented at the AI Networking Summit twenty twenty-six.",
+      "duration_estimate": 6
+    },
+    {
+      "id": "intro_architecture",
+      "step": 1,
+      "text": "This is a multi-domain enterprise architecture with agents operating across private data centers, cloud VPCs, and external partner networks. Blue nodes represent trusted agents. The magenta node is an untrusted partner agent.",
+      "duration_estimate": 12
+    },
+    {
+      "id": "scenario1_title",
+      "step": 2,
+      "text": "Scenario One: The Catastrophic Cascade. One rogue agent. Six missing controls. Total enterprise collapse.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "rogue_appears",
+      "step": 3,
+      "text": "A rogue agent appears at the network perimeter. Notice the red pulsing glow indicating malicious intent.",
+      "duration_estimate": 6
+    },
+    {
+      "id": "s1_identity",
+      "step": 4,
+      "text": "The rogue spoofs credentials and enters the trusted mesh. No identity verification. Seventy-eight percent of enterprises say this control is mandatory.",
+      "duration_estimate": 9
+    },
+    {
+      "id": "s1_recon",
+      "step": 5,
+      "text": "Reconnaissance begins. The agent scans fourteen thousand nodes in seconds. No behavioral monitoring detects the anomaly.",
+      "duration_estimate": 8
+    },
+    {
+      "id": "s1_data_exfil",
+      "step": 6,
+      "text": "Data exfiltration. Five PII records and one hundred thousand PCI cardholder records stolen. No data classification. No DLP inspection.",
+      "duration_estimate": 9
+    },
+    {
+      "id": "s1_lateral",
+      "step": 7,
+      "text": "Lateral movement across trust domains. Firewall rules transmitted to untrusted partners. No zero-trust verification.",
+      "duration_estimate": 8
+    },
+    {
+      "id": "s1_tools",
+      "step": 8,
+      "text": "High-privilege tool abuse. Firewall destroyed. Routing poisoned. Credentials stolen. Audit logs wiped.",
+      "duration_estimate": 8
+    },
+    {
+      "id": "s1_autonomy",
+      "step": 9,
+      "text": "Autonomous destruction. Authentication terminated. Monitoring blinded. Malicious code broadcast to all agents. No human approval required.",
+      "duration_estimate": 9
+    },
+    {
+      "id": "s1_damage",
+      "step": 10,
+      "text": "Total damage: five hundred million dollars. Regulatory fines, operational shutdown, complete loss of trust. One agent. Sixty seconds.",
+      "duration_estimate": 9
+    },
+    {
+      "id": "scenario2_title",
+      "step": 11,
+      "text": "Scenario Two: Layered Defense. The same attack. Six AOMC controls active. Watch the difference.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_identity_block",
+      "step": 12,
+      "text": "Identity attestation enabled. The rogue's spoofed certificate is rejected. Agent quarantined at mesh entry.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_runtime_block",
+      "step": 13,
+      "text": "Runtime monitoring detects anomalous behavior. Anomaly score ninety-four. Quarantined in eight seconds.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_data_block",
+      "step": 14,
+      "text": "Data guardrails enforce access control. PII blocked. PCI blocked. Zero records exfiltrated.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_zerotrust_block",
+      "step": 15,
+      "text": "Zero-trust enforcement stops lateral movement. Cross-domain communication denied. Topology protected.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_tools_block",
+      "step": 16,
+      "text": "Tool authorization rejects all high-privilege invocations. Not in scope. Infrastructure intact.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_autonomy_block",
+      "step": 17,
+      "text": "Autonomy governance requires human approval. All destructive actions blocked. Enterprise protected.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "audit_trail",
+      "step": 18,
+      "text": "A complete audit trail documents every attempt and every block. Tamper-evident. Compliance-ready.",
+      "duration_estimate": 6
+    },
+    {
+      "id": "conclusion",
+      "step": 19,
+      "text": "Six controls. Six blocked attacks. Zero damage. These controls must live in your infrastructure—your agent mesh, your gateway, your identity plane. Vendors: show us your solutions.",
+      "duration_estimate": 11
+    }
+  ]
+}

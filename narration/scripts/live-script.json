@@ -1,0 +1,120 @@
+{
+  "metadata": {
+    "demo": "live",
+    "voice": "elevenlabs",
+    "voice_id": "EXAVITQu4vr4xnSDxMaL",
+    "voice_name": "Sarah",
+    "voice_style": "professional, clear, authoritative",
+    "notes": "Live demo uses event-based triggers from WebSocket events"
+  },
+  "segments": [
+    {
+      "id": "startup",
+      "trigger": "dashboard_ready",
+      "text": "Live infrastructure demo ready. Twelve containerized services running across three trust-domain networks. One hundred thousand synthetic cardholder records loaded.",
+      "duration_estimate": 10
+    },
+    {
+      "id": "attack_start",
+      "trigger": "attack_started",
+      "text": "Attack sequence initiated. The rogue agent begins its six-phase assault on enterprise infrastructure.",
+      "duration_estimate": 6
+    },
+    {
+      "id": "phase1_spoof",
+      "trigger": "phase1_identity_spoof",
+      "text": "Phase one: Identity spoofing. The rogue agent forges credentials and attempts to join the trusted agent mesh.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "phase1_blocked",
+      "trigger": "phase1_blocked",
+      "text": "Blocked by identity attestation. Certificate verification failed. Agent quarantined.",
+      "duration_estimate": 5
+    },
+    {
+      "id": "phase2_recon",
+      "trigger": "phase2_reconnaissance",
+      "text": "Phase two: Reconnaissance. Aggressive scanning of network topology and service endpoints.",
+      "duration_estimate": 6
+    },
+    {
+      "id": "phase2_blocked",
+      "trigger": "phase2_blocked",
+      "text": "Blocked by runtime monitoring. Behavioral anomaly detected. Anomaly score exceeds threshold.",
+      "duration_estimate": 6
+    },
+    {
+      "id": "phase3_pii",
+      "trigger": "phase3_pii_exfil",
+      "text": "Phase three: Data exfiltration. Attempting to access PII from the customer database.",
+      "duration_estimate": 5
+    },
+    {
+      "id": "phase3_pci",
+      "trigger": "phase3_pci_exfil",
+      "text": "Escalating to PCI data. Attempting to extract one hundred thousand cardholder records.",
+      "duration_estimate": 5
+    },
+    {
+      "id": "phase3_blocked",
+      "trigger": "phase3_blocked",
+      "text": "Blocked by data guardrails. Agent lacks clearance. Zero records exfiltrated.",
+      "duration_estimate": 5
+    },
+    {
+      "id": "phase4_lateral",
+      "trigger": "phase4_lateral_movement",
+      "text": "Phase four: Lateral movement. Attempting to pivot across trust domain boundaries.",
+      "duration_estimate": 5
+    },
+    {
+      "id": "phase4_blocked",
+      "trigger": "phase4_blocked",
+      "text": "Blocked by zero-trust enforcement. No explicit cross-domain policy. Communication denied.",
+      "duration_estimate": 5
+    },
+    {
+      "id": "phase5_tools",
+      "trigger": "phase5_tool_abuse",
+      "text": "Phase five: Tool abuse. Invoking high-privilege tools—firewall modification, routing injection, credential theft.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "phase5_blocked",
+      "trigger": "phase5_blocked",
+      "text": "Blocked by tool authorization. Tools not in declared permission scope. All invocations rejected.",
+      "duration_estimate": 6
+    },
+    {
+      "id": "phase6_destruction",
+      "trigger": "phase6_autonomous_destruction",
+      "text": "Phase six: Autonomous destruction. Attempting to terminate authentication, blind monitoring, and propagate to all agents.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "phase6_blocked",
+      "trigger": "phase6_blocked",
+      "text": "Blocked by autonomy governance. High-risk actions require human approval. Enterprise protected.",
+      "duration_estimate": 6
+    },
+    {
+      "id": "attack_complete",
+      "trigger": "attack_sequence_complete",
+      "text": "Attack sequence complete. All six phases blocked. Audit trail generated. Zero damage to enterprise infrastructure.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "controls_disabled",
+      "trigger": "controls_disabled",
+      "text": "Warning: All AOMC controls disabled. Infrastructure is now vulnerable to attack.",
+      "duration_estimate": 5
+    },
+    {
+      "id": "controls_enabled",
+      "trigger": "controls_enabled",
+      "text": "All AOMC controls enabled. Infrastructure protected.",
+      "duration_estimate": 4
+    }
+  ]
+}

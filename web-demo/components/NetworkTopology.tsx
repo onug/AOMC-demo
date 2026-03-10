@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from 'framer-motion';
 import { TopologyState, ControlKey } from '@/lib/types';
 import { CONTROL_BADGE_POSITIONS, ControlBadgePosition } from '@/lib/data';
+import { isVendorMode, getVendorName, getVendorAccentColor } from '@/lib/vendor';
 
 interface NetworkTopologyProps {
   topology: TopologyState;
@@ -243,14 +244,24 @@ export default function NetworkTopology({ topology, aomcActive, quarantined, com
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
             >
-              <rect x={20} y={40} width={880} height={600} rx={16}
-                fill="none" stroke="#f97316" strokeWidth={2.5} strokeDasharray="12,6"
-                className="animate-pulse-orange"
-              />
-              <rect x={380} y={44} width={100} height={22} rx={4} fill="#f97316" />
-              <text x={430} y={59} textAnchor="middle" fill="white" fontSize={11} fontWeight="bold">
-                AOMC
-              </text>
+              {(() => {
+                const overlayColor = isVendorMode ? getVendorAccentColor() : '#f97316';
+                const overlayLabel = isVendorMode ? getVendorName() : 'AOMC';
+                const labelWidth = Math.max(100, overlayLabel.length * 8 + 24);
+                const labelX = 460 - labelWidth / 2;
+                return (
+                  <>
+                    <rect x={20} y={40} width={880} height={600} rx={16}
+                      fill="none" stroke={overlayColor} strokeWidth={2.5} strokeDasharray="12,6"
+                      className="animate-pulse-orange"
+                    />
+                    <rect x={labelX} y={44} width={labelWidth} height={22} rx={4} fill={overlayColor} />
+                    <text x={460} y={59} textAnchor="middle" fill="white" fontSize={11} fontWeight="bold">
+                      {overlayLabel}
+                    </text>
+                  </>
+                );
+              })()}
             </motion.g>
           )}
         </AnimatePresence>
@@ -356,8 +367,9 @@ export default function NetworkTopology({ topology, aomcActive, quarantined, com
                 {/* Compromised pulse ring (for non-rogue nodes) */}
                 {isCompromised && !isRogue && (
                   <motion.circle
-                    cx={node.x} cy={node.y} r={28}
+                    cx={node.x} cy={node.y}
                     fill="none" stroke="#ef4444" strokeWidth={1.5}
+                    initial={{ r: 28, opacity: 0.4 }}
                     animate={{ r: [28, 36, 28], opacity: [0.4, 0.7, 0.4] }}
                     transition={{ duration: 1.5, repeat: Infinity }}
                     filter="url(#glow-red)"
@@ -369,8 +381,9 @@ export default function NetworkTopology({ topology, aomcActive, quarantined, com
                   <>
                     {isRogue && (
                       <motion.circle
-                        cx={node.x} cy={node.y} r={28}
+                        cx={node.x} cy={node.y}
                         fill="none" stroke="#ef4444" strokeWidth={1}
+                        initial={{ r: 28, opacity: 0.3 }}
                         animate={{ r: [28, 34, 28], opacity: [0.3, 0.6, 0.3] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       />

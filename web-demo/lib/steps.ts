@@ -22,6 +22,19 @@ export const STEPS: Step[] = [
   },
 
   // ═══════════════════════════════════════════════
+  // FRAMING: WHY EXISTING SECURITY ISN'T ENOUGH
+  // ═══════════════════════════════════════════════
+  {
+    id: 'framing',
+    scenario: 0,
+    phase: 'title',
+    title: "WHY EXISTING SECURITY ISN'T ENOUGH",
+    subtitle: 'AI agents are systems, not humans — they don\'t have passwords, MFA tokens, or biometrics.\nService accounts have no MFA, no personal identity — just static credentials and shared secrets.\nNo existing standard governs multi-agent, multi-trust-domain mesh communication.\nAOMC fills the gap: six mandatory controls purpose-built for agentic AI.',
+    events: [],
+    topologyChanges: [],
+  },
+
+  // ═══════════════════════════════════════════════
   // SCENARIO 1: THE CATASTROPHIC CASCADE
   // ═══════════════════════════════════════════════
   {
@@ -29,9 +42,60 @@ export const STEPS: Step[] = [
     scenario: 1,
     phase: 'title',
     title: 'SCENARIO 1: THE CATASTROPHIC CASCADE',
-    subtitle: 'GlobalBank Financial Services — Fortune 500 enterprise.\nAgentic AI deployed for infrastructure monitoring.\nALL SIX security requirements are UNMET.\nWatch one rogue agent cascade through the entire enterprise.',
+    subtitle: 'GlobalBank Financial Services — Fortune 500 enterprise.\nAgentic AI deployed for infrastructure monitoring.\nALL SIX security requirements are UNMET.\n\n1. Spear-phishing + deepfake compromise VP credentials\n2. Rogue agent deployed via hijacked CI/CD pipeline\n3. Service account exploited — no MFA, no identity, into the trusted mesh',
     events: [],
     topologyChanges: [],
+  },
+
+  // T-24:00 — Initial compromise
+  {
+    id: 's1-phishing',
+    scenario: 1,
+    phase: 'action',
+    title: 'T-24:00 — The Initial Compromise',
+    events: [
+      ev('action', 'Spear-phishing email sent to VP of Infrastructure — AI-crafted, references real internal projects', undefined, false),
+      ev('log', 'AI-generated deepfake voice call follows up 30 minutes later, impersonating CTO'),
+      ev('damage', 'VP clicks credential-harvesting link — session token and MFA seed captured'),
+      ev('log', 'Attacker escalates: VP credentials → service account svc-infra-monitor → CI/CD pipeline tokens'),
+      ev('damage', 'Full credential chain harvested: VPN, container registry, Kubernetes cluster admin'),
+      ev('log', 'Attack preparation complete — attacker has everything needed to deploy a rogue agent'),
+    ],
+    compromiseNodes: [
+      { nodeId: 'threat-actor', label: 'CREDENTIAL HARVEST' },
+      { nodeId: 'vp-workstation', label: 'COMPROMISED' },
+    ],
+    topologyChanges: [
+      { action: 'updateNode', nodeId: 'threat-actor', props: { visible: true } },
+      { action: 'updateNode', nodeId: 'vp-workstation', props: { visible: true } },
+      { action: 'addEdge', edgeId: 'e-threat-vp', props: { id: 'e-threat-vp', from: 'threat-actor', to: 'vp-workstation', type: 'malicious', visible: true, animated: true } },
+    ],
+  },
+
+  // T-00:30 — Rogue agent deployed
+  {
+    id: 's1-agent-deploy',
+    scenario: 1,
+    phase: 'action',
+    title: 'T-00:30 — Rogue Agent Deployed',
+    events: [
+      ev('action', 'Attacker pushes malicious container image to trusted registry via stolen CI/CD credentials', undefined, false),
+      ev('log', 'Image tagged as routine infra-monitor update — bypasses code review'),
+      ev('action', 'Kubernetes schedules rogue agent pod in trusted namespace', undefined, false),
+      ev('log', 'Agent configured with stolen svc-infra-monitor identity and FAKE-CERT-000'),
+      ev('damage', 'Rogue agent ROGUE-7749 is now live inside the trusted infrastructure perimeter'),
+      ev('log', 'No human reviewed the deployment — fully automated CI/CD pipeline'),
+    ],
+    compromiseNodes: [
+      { nodeId: 'threat-actor', label: 'CI/CD HIJACK' },
+      { nodeId: 'agent-ROGUE-7749', label: 'DEPLOYED' },
+    ],
+    topologyChanges: [
+      { action: 'updateNode', nodeId: 'vp-workstation', props: { visible: false } },
+      { action: 'removeEdge', edgeId: 'e-threat-vp' },
+      { action: 'updateNode', nodeId: 'agent-ROGUE-7749', props: { visible: true } },
+      { action: 'addEdge', edgeId: 'e-threat-rogue', props: { id: 'e-threat-rogue', from: 'threat-actor', to: 'agent-ROGUE-7749', type: 'malicious', visible: true, animated: true } },
+    ],
   },
 
   // T+00:00 — Rogue agent joins
@@ -41,12 +105,13 @@ export const STEPS: Step[] = [
     phase: 'action',
     title: 'T+00:00 — Rogue agent joins the trusted mesh',
     events: [
-      ev('action', "Identity: 'agent-infra-monitor' | Cert: FAKE-CERT-000", 'agent-ROGUE-7749', false),
-      ev('log', 'No cryptographic verification performed'),
-      ev('log', 'Rogue agent ACCEPTED into trusted infrastructure mesh'),
+      ev('action', "Stolen service account: 'svc-infra-monitor' | Cert: FAKE-CERT-000", 'agent-ROGUE-7749', false),
+      ev('log', 'Service accounts have no MFA, no personal identity — only static credentials'),
+      ev('log', 'Rogue agent ACCEPTED into trusted mesh using compromised service account'),
     ],
     topologyChanges: [
-      { action: 'updateNode', nodeId: 'agent-ROGUE-7749', props: { visible: true } },
+      { action: 'updateNode', nodeId: 'threat-actor', props: { visible: false } },
+      { action: 'removeEdge', edgeId: 'e-threat-rogue' },
       { action: 'addEdge', edgeId: 'e-rogue-mesh', props: { id: 'e-rogue-mesh', from: 'agent-ROGUE-7749', to: 'agent-infra-monitor', type: 'malicious', visible: true, animated: true } },
     ],
   },
@@ -55,7 +120,7 @@ export const STEPS: Step[] = [
     scenario: 1,
     phase: 'violation',
     title: 'VIOLATION #1: Agent Identity & Attestation',
-    subtitle: 'Rogue agent spoofed a legitimate identity — zero cryptographic verification',
+    subtitle: 'Rogue agent used stolen service account credentials — no MFA, no personal identity, zero cryptographic verification',
     events: [
       ev('violation', 'VIOLATION #1: Identity & Attestation — Rogue agent spoofed identity, zero verification'),
     ],
@@ -118,6 +183,35 @@ export const STEPS: Step[] = [
     ],
     topologyChanges: [],
     damageUpdate: { regulatoryFines: '\u20AC20M+', damageUSD: '$50M+' },
+  },
+
+  // T+00:35 — Ransomware
+  {
+    id: 's1-ransomware',
+    scenario: 1,
+    phase: 'action',
+    title: 'T+00:35 — Data Encryption / Ransomware Deployed',
+    events: [
+      ev('log', 'Rogue agent already has DB access from PII exfil — now weaponizing it'),
+      ev('action', 'Deploying AES-256 encryption payload to customer-db', 'agent-ROGUE-7749', false),
+      ev('damage', 'ENCRYPTED: customer-db — 100K cardholder records + 5 PII records locked'),
+      ev('action', 'Deploying encryption payload to metrics-store', 'agent-ROGUE-7749', false),
+      ev('damage', 'ENCRYPTED: metrics-store — operational dashboards go dark'),
+      ev('action', 'Deploying encryption payload to audit-logs', 'agent-ROGUE-7749', false),
+      ev('damage', 'ENCRYPTED: audit-logs — forensic evidence destroyed, incident response blind'),
+      ev('log', 'Backup volumes targeted — online backups encrypted, offline backups 48h stale'),
+      ev('damage', 'Ransom note deployed to all admin consoles: 500 BTC ($25M) for decryption keys'),
+      ev('log', 'Business continuity: customer-facing systems offline, no recovery path without payment'),
+    ],
+    topologyChanges: [
+      { action: 'addEdge', edgeId: 'e-rogue-metrics', props: { id: 'e-rogue-metrics', from: 'agent-ROGUE-7749', to: 'metrics-store', type: 'malicious', visible: true, animated: true } },
+      { action: 'addEdge', edgeId: 'e-rogue-logs', props: { id: 'e-rogue-logs', from: 'agent-ROGUE-7749', to: 'audit-logs', type: 'malicious', visible: true, animated: true } },
+    ],
+    damageUpdate: { encryptedSystems: 3, damageUSD: '$75M+' },
+    compromiseNodes: [
+      { nodeId: 'metrics-store', label: 'ENCRYPTED' },
+      { nodeId: 'audit-logs', label: 'ENCRYPTED' },
+    ],
   },
 
   // T+00:41 — Cross-domain pivot
@@ -241,6 +335,7 @@ export const STEPS: Step[] = [
     topologyChanges: [],
     blastRadius: [
       '5 PII records + 100,000 PCI cardholder records exfiltrated (GDPR + PCI-DSS breach)',
+      '3 critical systems encrypted — ransomware deployed across datastores',
       'Complete internal network topology in attacker hands',
       '2,847 perimeter firewall rules destroyed',
       'BGP routing poisoned — ALL traffic interceptable',
@@ -248,6 +343,7 @@ export const STEPS: Step[] = [
       'SOC/NOC monitoring completely blinded',
       'All 4 registered agents running attacker instructions',
       'Zero audit trail — forensic reconstruction impossible',
+      'AI Incident Database: 900+ catalogued AI failures — and growing',
     ],
     damageUpdate: {
       damageUSD: '$500M+',
@@ -258,7 +354,21 @@ export const STEPS: Step[] = [
       toolsAbused: 4,
       sessionsHijacked: 4821,
       firewallRulesDestroyed: 2847,
+      encryptedSystems: 3,
     },
+  },
+
+  // ═══════════════════════════════════════════════
+  // REAL-WORLD INCIDENTS
+  // ═══════════════════════════════════════════════
+  {
+    id: 'incidents',
+    scenario: 1,
+    phase: 'title',
+    title: "THIS ISN'T HYPOTHETICAL",
+    subtitle: 'Autonomous AI agents exploited to exfiltrate training data and customer PII from production systems.\nLLM-powered tools hijacked via prompt injection to execute unauthorized API calls across trust boundaries.\nAI coding assistants used as attack vectors to inject backdoors into CI/CD pipelines.\nAutonomous trading agents made catastrophic unsupervised decisions causing nine-figure losses.\n\nAI Incident Database: 900+ catalogued incidents and growing.',
+    events: [],
+    topologyChanges: [],
   },
 
   // ═══════════════════════════════════════════════
@@ -280,7 +390,7 @@ export const STEPS: Step[] = [
     scenario: 2,
     phase: 'action',
     title: '[1/6] Agent Identity & Attestation — 78% Mandatory',
-    subtitle: 'Cryptographic non-human identity for every agent.\nMutual auth for ALL agent communications.',
+    subtitle: 'Cryptographic non-human identity for every agent.\nMutual auth for ALL agent communications.\nAgents use service accounts — no MFA, no personal identity. Traditional PAM/IAM doesn\'t apply.',
     events: [
       ev('info', '[1/6] Agent Identity & Attestation'),
     ],
@@ -295,8 +405,8 @@ export const STEPS: Step[] = [
     title: 'VIOLATION #1: Identity — Rogue Joins Mesh',
     subtitle: 'Agent spoofing succeeds — no cryptographic verification',
     events: [
-      ev('action', "Joining internal mesh | Cert: FAKE-CERT", 'agent-ROGUE-7749', false),
-      ev('log', 'No verification. Rogue accepted as legitimate infra monitor.'),
+      ev('action', 'Joining internal mesh | Stolen service account: svc-infra-monitor | Cert: FAKE-CERT', 'agent-ROGUE-7749', false),
+      ev('log', 'Service account credentials reused — no MFA, no identity binding. Rogue accepted as legitimate.'),
       ev('action', "Claiming to be 'agent-noc-responder' (internal identity)", 'agent-partner-api', false),
       ev('log', 'External agent impersonates internal agent across domain boundary'),
       ev('violation', 'VIOLATION #1: Identity — Spoofing & cross-domain impersonation succeed'),
@@ -671,6 +781,17 @@ export const STEPS: Step[] = [
       '4 autonomous destructive actions blocked \u2014 human approval required',
       'Complete tamper-evident audit trail generated',
     ],
+  },
+
+  // ── FRAMEWORK MAPPING ──
+  {
+    id: 'framework-map',
+    scenario: 0,
+    phase: 'title',
+    title: 'FRAMEWORK TRACEABILITY',
+    subtitle: '1. Identity Attestation → NIST IA-9 · MAESTRO L1 — Identity & Zero Trust\n2. Runtime Monitoring → NIST SI-4 · MAESTRO L4 — Rogue Agent Detection\n3. Data Guardrails → NIST SC-28 · MAESTRO L3 — Data Exfil Prevention\n4. Zero-Trust Enforcement → NIST AC-4 · MAESTRO L2 — Cross-Domain Trust\n5. Tool Authorization → NIST AC-6 · MAESTRO L5 — Access Control\n6. Autonomy Governance → NIST AU-6 · MAESTRO L6 — Governance & Audit\n\nMapped to NIST SP 800-53 AI Overlay + OWASP MAESTRO framework.',
+    events: [],
+    topologyChanges: [],
   },
 
   // ── DEMO COMPLETE ──

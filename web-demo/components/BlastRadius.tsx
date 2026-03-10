@@ -86,10 +86,11 @@ export default function BlastRadius({ damage, blastItems, isScenario1Summary }: 
           <AnimatedNumber value={damage.regulatoryFines} label="Reg. Fines" />
         </div>
 
-        {damage.sessionsHijacked > 0 && (
-          <div className="grid grid-cols-2 gap-3 mb-3">
+        {(damage.sessionsHijacked > 0 || damage.encryptedSystems > 0) && (
+          <div className="grid grid-cols-3 gap-3 mb-3">
             <AnimatedNumber value={damage.sessionsHijacked} label="Sessions Hijacked" />
             <AnimatedNumber value={damage.firewallRulesDestroyed} label="FW Rules Lost" />
+            <AnimatedNumber value={damage.encryptedSystems} label="Encrypted" />
           </div>
         )}
 

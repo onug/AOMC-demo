@@ -92,9 +92,10 @@ export default function BlastRadius({ damage }: BlastRadiusProps) {
           <StringMetric value={damage.damageUSD} label="Est. Damage" />
           <StringMetric value={damage.regulatoryFines} label="Reg. Fines" />
         </div>
-        <div className="grid grid-cols-2 gap-3 mt-3">
+        <div className="grid grid-cols-3 gap-3 mt-3">
           <AnimatedNumber value={damage.sessionsHijacked} label="Sessions Hijacked" />
           <AnimatedNumber value={damage.firewallRulesDestroyed} label="FW Rules Lost" />
+          <AnimatedNumber value={damage.encryptedSystems} label="Encrypted" />
         </div>
         {damage.recoveryTime !== '0h' && (
           <div className="text-center py-1 mt-2">

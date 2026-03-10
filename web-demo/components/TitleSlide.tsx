@@ -1,6 +1,7 @@
 'use client';
 
 import { motion, AnimatePresence } from 'framer-motion';
+import { isVendorMode, getVendorName, getVendorLogoUrl, getVendorAccentColor, getVendorTagline } from '@/lib/vendor';
 
 interface TitleSlideProps {
   title: string;
@@ -13,6 +14,9 @@ interface TitleSlideProps {
 export default function TitleSlide({ title, subtitle, scenario, contributors, visible }: TitleSlideProps) {
   const color = scenario === 1 ? 'text-red-500' : scenario === 2 ? 'text-green-500' : 'text-cyan-400';
   const glowClass = scenario === 1 ? 'glow-red' : scenario === 2 ? 'glow-green' : 'glow-cyan';
+  const dividerColor = isVendorMode && scenario === 0
+    ? getVendorAccentColor()
+    : scenario === 1 ? '#ef4444' : scenario === 2 ? '#22c55e' : '#06b6d4';
 
   return (
     <AnimatePresence>
@@ -25,6 +29,30 @@ export default function TitleSlide({ title, subtitle, scenario, contributors, vi
           className="flex-1 flex items-center justify-center"
         >
           <div className="text-center max-w-4xl px-8">
+            {/* Vendor logo + name on title/finale slides */}
+            {isVendorMode && (scenario === 0 || title === 'DEMO COMPLETE') && (
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.1, duration: 0.4 }}
+                className="mb-6 flex items-center justify-center gap-3"
+              >
+                {getVendorLogoUrl() && (
+                  <img
+                    src={getVendorLogoUrl()}
+                    alt={getVendorName()}
+                    className="h-12 w-auto"
+                  />
+                )}
+                <span
+                  className="text-2xl font-bold"
+                  style={{ color: getVendorAccentColor() }}
+                >
+                  {getVendorName()}
+                </span>
+              </motion.div>
+            )}
+
             <motion.div
               initial={{ y: 30, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
@@ -34,7 +62,7 @@ export default function TitleSlide({ title, subtitle, scenario, contributors, vi
                 {title}
               </h1>
               <div className={`w-32 h-1 mx-auto mb-8 rounded-full ${glowClass}`}
-                style={{ backgroundColor: scenario === 1 ? '#ef4444' : scenario === 2 ? '#22c55e' : '#06b6d4' }}
+                style={{ backgroundColor: dividerColor }}
               />
             </motion.div>
 
@@ -49,6 +77,19 @@ export default function TitleSlide({ title, subtitle, scenario, contributors, vi
               </motion.div>
             )}
 
+            {/* Vendor tagline on title/finale slides */}
+            {isVendorMode && getVendorTagline() && (scenario === 0 || title === 'DEMO COMPLETE') && (
+              <motion.p
+                initial={{ y: 15, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: 0.7, duration: 0.4 }}
+                className="text-lg mb-6"
+                style={{ color: getVendorAccentColor() }}
+              >
+                {getVendorTagline()}
+              </motion.p>
+            )}
+
             {contributors && (
               <motion.div
                 initial={{ y: 20, opacity: 0 }}
@@ -57,7 +98,7 @@ export default function TitleSlide({ title, subtitle, scenario, contributors, vi
                 className="space-y-3 text-gray-400"
               >
                 <p className="text-sm uppercase tracking-widest text-gray-500">ONUG Agentic AI Overlay Working Group</p>
-                <p className="text-base">Contributors: eBay &middot; Cigna &middot; Bank of America &middot; Indeed &middot; Kraken</p>
+                <p className="text-base">Contributors: eBay &middot; Cigna &middot; Indeed &middot; Kraken</p>
                 <p className="text-sm text-gray-500">
                   Architecture: Multi-Agent &middot; Multi-Trust-Domain
                 </p>

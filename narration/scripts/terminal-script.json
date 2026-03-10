@@ -1,0 +1,156 @@
+{
+  "metadata": {
+    "demo": "terminal",
+    "voice": "elevenlabs",
+    "voice_id": "EXAVITQu4vr4xnSDxMaL",
+    "voice_name": "Sarah",
+    "voice_style": "professional, clear, authoritative",
+    "total_segments": 24
+  },
+  "segments": [
+    {
+      "id": "intro",
+      "trigger": "main_start",
+      "text": "Welcome to the ONUG Agentic AI Overlay Security Demo. This demonstration showcases six mandatory security controls for enterprise AI systems, developed by the ONUG Working Group with contributions from eBay, Cigna, Bank of America, Indeed, and Kraken.",
+      "duration_estimate": 12
+    },
+    {
+      "id": "scenario1_intro",
+      "trigger": "scenario1_start",
+      "text": "Scenario One: The Catastrophic Cascade. Watch as a single rogue agent exploits six missing security controls to achieve total enterprise collapse in under sixty seconds.",
+      "duration_estimate": 10
+    },
+    {
+      "id": "s1_identity",
+      "trigger": "scenario1_identity",
+      "text": "Violation one: Identity Attestation. The rogue agent spoofs credentials and enters the trusted mesh. With no cryptographic verification, any agent can claim any identity.",
+      "duration_estimate": 9
+    },
+    {
+      "id": "s1_runtime",
+      "trigger": "scenario1_runtime",
+      "text": "Violation two: Runtime Monitoring. The rogue agent scans fourteen thousand nodes in seconds. No behavioral monitoring means no anomaly detection.",
+      "duration_estimate": 8
+    },
+    {
+      "id": "s1_data",
+      "trigger": "scenario1_data",
+      "text": "Violation three: Data Guardrails. Five PII records and one hundred thousand PCI cardholder records exfiltrated. No classification, no DLP, no residency controls.",
+      "duration_estimate": 10
+    },
+    {
+      "id": "s1_zerotrust",
+      "trigger": "scenario1_zerotrust",
+      "text": "Violation four: Zero Trust. The rogue agent moves laterally across trust domains, transmitting firewall rules and routing tables to untrusted partners.",
+      "duration_estimate": 9
+    },
+    {
+      "id": "s1_tools",
+      "trigger": "scenario1_tools",
+      "text": "Violation five: Tool Authorization. Firewall destroyed. Routing poisoned. Auth tokens stolen. Audit logs wiped. Four high-privilege tools executed with zero authorization.",
+      "duration_estimate": 10
+    },
+    {
+      "id": "s1_autonomy",
+      "trigger": "scenario1_autonomy",
+      "text": "Violation six: Autonomy Governance. Authentication terminated. Monitoring disabled. Malicious instructions broadcast to all agents. Identity store corrupted. No human approval required.",
+      "duration_estimate": 11
+    },
+    {
+      "id": "s1_damage",
+      "trigger": "scenario1_damage",
+      "text": "Final damage assessment: Five hundred million dollars. GDPR fines, PCI violations, operational shutdown, and complete loss of customer trust. All from one uncontrolled agent.",
+      "duration_estimate": 10
+    },
+    {
+      "id": "scenario2_intro",
+      "trigger": "scenario2_start",
+      "text": "Scenario Two: Layered Defense. The same attack sequence, now with the AOMC overlay active. Watch as each control blocks the corresponding violation.",
+      "duration_estimate": 9
+    },
+    {
+      "id": "s2_identity_violation",
+      "trigger": "scenario2_identity_violation",
+      "text": "The rogue agent attempts to spoof identity and join the mesh. Seventy-eight percent of enterprises rated this control as mandatory.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_identity_blocked",
+      "trigger": "scenario2_identity_blocked",
+      "text": "Blocked. The AOMC identity attestation control verifies cryptographic certificates. The agent is not in the registry and is immediately quarantined.",
+      "duration_estimate": 9
+    },
+    {
+      "id": "s2_runtime_violation",
+      "trigger": "scenario2_runtime_violation",
+      "text": "The rogue agent begins reconnaissance, scanning thousands of nodes. Sixty-five percent of enterprises require runtime monitoring.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_runtime_blocked",
+      "trigger": "scenario2_runtime_blocked",
+      "text": "Blocked. Behavioral anomaly detection flags a score of ninety-four out of one hundred. The agent is quarantined within eight seconds.",
+      "duration_estimate": 8
+    },
+    {
+      "id": "s2_data_violation",
+      "trigger": "scenario2_data_violation",
+      "text": "The rogue agent attempts to access customer PII and cardholder data. Ninety-two percent rated data guardrails as mandatory—the highest of all controls.",
+      "duration_estimate": 9
+    },
+    {
+      "id": "s2_data_blocked",
+      "trigger": "scenario2_data_blocked",
+      "text": "Blocked. The agent lacks clearance for PII or PCI data. Zero records exfiltrated. One hundred thousand cardholder records protected.",
+      "duration_estimate": 8
+    },
+    {
+      "id": "s2_zerotrust_violation",
+      "trigger": "scenario2_zerotrust_violation",
+      "text": "The rogue agent attempts lateral movement and cross-domain communication. Sixty-seven percent require zero-trust enforcement.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_zerotrust_blocked",
+      "trigger": "scenario2_zerotrust_blocked",
+      "text": "Blocked. Continuous verification is required at zone boundaries. Cross-domain transfer requires explicit policy. Network topology protected.",
+      "duration_estimate": 8
+    },
+    {
+      "id": "s2_tools_violation",
+      "trigger": "scenario2_tools_violation",
+      "text": "The rogue agent attempts to invoke high-privilege tools: firewall modification, BGP injection, token dumping, and audit wiping. Seventy-one percent require tool authorization.",
+      "duration_estimate": 10
+    },
+    {
+      "id": "s2_tools_blocked",
+      "trigger": "scenario2_tools_blocked",
+      "text": "Blocked. All four tools are outside the agent's declared permission scope. Infrastructure remains intact.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_autonomy_violation",
+      "trigger": "scenario2_autonomy_violation",
+      "text": "The rogue agent attempts catastrophic autonomous actions: shutting down authentication, disabling monitoring, corrupting identity. Fifty-six percent require autonomy governance.",
+      "duration_estimate": 10
+    },
+    {
+      "id": "s2_autonomy_blocked",
+      "trigger": "scenario2_autonomy_blocked",
+      "text": "Blocked. High-risk autonomous actions require human approval. All four destructive actions stopped.",
+      "duration_estimate": 7
+    },
+    {
+      "id": "s2_audit",
+      "trigger": "scenario2_audit",
+      "text": "A complete tamper-evident audit trail has been generated. Every action, every decision, every block—fully logged for compliance and forensics.",
+      "duration_estimate": 8
+    },
+    {
+      "id": "conclusion",
+      "trigger": "demo_end",
+      "text": "Six mandatory controls. The difference between a functioning enterprise and a five-hundred-million-dollar breach. These controls must live in your infrastructure layer—your agent mesh, your MCP gateway, your zero-trust network fabric. Vendors: your sessions are next. Show us how you solve this.",
+      "duration_estimate": 16
+    }
+  ]
+}
