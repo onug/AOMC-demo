@@ -1,0 +1,89 @@
+name: "Intent to Submit — Agentic AI Overlay Award"
+description: "Declare your intent to submit a vendor demo for the Agentic AI Overlay Award at the AI Networking Summit 2026."
+title: "Intent to Submit: [Company Name]"
+labels: ["vendor-submission", "intent-to-submit"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Agentic AI Overlay Award — Intent to Submit
+
+        Thank you for your interest in the Agentic AI Overlay Award. Please fill out the fields below by **March 21, 2026**.
+
+        This helps the ONUG Agentic AI Working Group plan office hours, coordinate judging, and support your integration.
+
+  - type: input
+    id: company
+    attributes:
+      label: Company Name
+      placeholder: "e.g., Acme Security"
+    validations:
+      required: true
+
+  - type: input
+    id: product
+    attributes:
+      label: Product Name(s)
+      description: "The product(s) you'll showcase in the demo."
+      placeholder: "e.g., Acme SecureAgent, Acme DLP"
+    validations:
+      required: true
+
+  - type: input
+    id: contact_name
+    attributes:
+      label: Primary Contact Name
+      placeholder: "e.g., Jane Smith"
+    validations:
+      required: true
+
+  - type: input
+    id: contact_email
+    attributes:
+      label: Primary Contact Email
+      placeholder: "e.g., jane@acme.com"
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: controls
+    attributes:
+      label: Which AOMC controls will your product cover?
+      description: "Check all that apply. Partial coverage (2-3 controls) is welcome."
+      options:
+        - label: "1. Identity Attestation (NIST IA-9 / MAESTRO L1)"
+        - label: "2. Runtime Monitoring (NIST SI-4 / MAESTRO L4)"
+        - label: "3. Data Guardrails (NIST SC-28 / MAESTRO L3)"
+        - label: "4. Zero-Trust Enforcement (NIST AC-4 / MAESTRO L2)"
+        - label: "5. Tool Authorization (NIST AC-6 / MAESTRO L5)"
+        - label: "6. Autonomy Governance (NIST AU-6 / MAESTRO L6)"
+
+  - type: dropdown
+    id: demo_format
+    attributes:
+      label: Demo Format
+      description: "Which demo format do you plan to submit? The live demo offers significantly more opportunities to showcase your product."
+      options:
+        - "Live Infrastructure Demo (Docker container)"
+        - "Web Demo (TypeScript config)"
+        - "Both"
+    validations:
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Brief Description
+      description: "1-2 sentences on how your product enforces the selected controls."
+      placeholder: "e.g., Acme SecureAgent provides hardware-rooted agent identity attestation and real-time behavioral anomaly detection for multi-agent environments."
+    validations:
+      required: false
+
+  - type: textarea
+    id: questions
+    attributes:
+      label: Questions or Requests
+      description: "Anything you'd like to discuss at Office Hours or need help with."
+      placeholder: "e.g., Need clarification on the vendor interface contract for runtime monitoring."
+    validations:
+      required: false
