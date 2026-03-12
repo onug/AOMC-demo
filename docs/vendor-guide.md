@@ -4,12 +4,22 @@ Security vendors can fork this repo and customize the demo to showcase their pro
 
 Scenario 1 (the unprotected attack) is always identical. Vendor customization applies to **Scenario 2** — the layered defense — where each control's intro, enable, and blocked steps show your product name, logo, and accent color.
 
+## Use Your Demo at the AI Networking Summit
+
+Vendor demos built from this repo can be used in two ways at the summit:
+
+1. **TTT (Train-the-Trainer) Sessions** — Present your customized demo during your assigned TTT session. Walk the audience through Scenario 1 (unprotected), then Scenario 2 with your product blocking each attack phase. The web demo is ideal for the main stage; the live demo is ideal for deep-dive breakout sessions.
+
+2. **Agentic AI Overlay Award** — Submit your vendor demo for consideration for an Agentic AI Overlay Award. Submissions are evaluated on how effectively your product demonstrates enforcement of the six AOMC controls against a real attack sequence. Both partial-coverage (2-3 controls) and full-coverage (all 6) submissions are welcome.
+
+To participate in either, fork this repo, follow the setup instructions below, and coordinate with the ONUG working group for scheduling and submission details.
+
 ## Architecture Overview
 
 | Demo | Customization mechanism | What changes |
 |------|------------------------|--------------|
 | **Web Demo** | TypeScript config file (`vendor-config.ts`) | Title slides, control panel badges, blocked overlay, topology overlay label, enable/blocked step text |
-| **Live Demo** | Docker container + env vars | Dashboard vendor badges, audit trail attribution, event feed prefixes, `/api/vendors` endpoint |
+| **Live Demo** | Docker container + env vars | Dashboard vendor badges, **"Protected by {YourProduct}"** on every blocked overlay, audit trail attribution, event feed prefixes, vendor branding on finale slide |
 
 Both mechanisms are opt-in. When unconfigured, the demos run as the default AOMC presentation.
 
@@ -277,11 +287,32 @@ Example: `VENDOR_RUNTIME_MONITORING_URL`, `VENDOR_RUNTIME_MONITORING_NAME`.
 
 ### Dashboard behavior
 
-When a vendor is active:
-- Purple badge with vendor name appears below the control in the AOMC panel
-- Audit trail entries prefixed with `[VendorName]`
-- Event feed shows vendor attribution
-- `/api/vendors` endpoint returns all registered vendors
+When a vendor is active, your product name and branding appear at every key moment:
+
+**During the S2 attack (each control blocks an attack phase):**
+- **Blocked overlay** — "Protected by YourCompany ProductName" appears in purple text on the green shield overlay every time your control blocks an attack phase. This is the most prominent vendor touchpoint — the audience sees your product name credited for each mitigation.
+- **AOMC panel** — Purple badge with vendor name appears below the control toggle
+- **Event feed** — Messages prefixed with `[YourCompany ProductName]` (e.g., `[YourCompany ProductName] cert CN mismatch — QUARANTINED`)
+- **Audit trail** — Tamper-evident entries prefixed with your vendor name
+
+**On the finale slide ("DEMO COMPLETE"):**
+- A purple-bordered card displays **"{N} of 6 controls demonstrated by YourCompany ProductName"** (or "All 6" if you cover all controls)
+- Multiple vendor names are joined with "+" if different vendors cover different controls
+
+**API:**
+- `/api/vendors` endpoint returns all registered vendors and which controls they cover
+
+### What your audience sees (S2 flow)
+
+| Moment | What appears | Example |
+|--------|-------------|---------|
+| Attack phase blocked | Green shield overlay + **"Protected by YourProduct"** | "Identity spoofing BLOCKED — Protected by Acme SecureAgent" |
+| Control enforcing | AOMC panel badge flashes | Purple "Acme SecureAgent" badge on Identity Attestation |
+| Event stream | Vendor-attributed detail | `[Acme SecureAgent] cert mismatch — QUARANTINED` |
+| Audit trail | Vendor-prefixed entry | `[Acme SecureAgent] identity_check REJECTED` |
+| Finale slide | Vendor branding card | "4 of 6 controls demonstrated by Acme SecureAgent" |
+
+Controls you don't cover fall through to default AOMC builtin logic with no vendor branding.
 
 ---
 
@@ -292,7 +323,7 @@ For a complete vendor presentation, configure both:
 1. **Web demo** for the conference stage (vendor-config.ts) — large-screen, presenter-controlled
 2. **Live demo** for hands-on booth demos (Docker container) — real infrastructure, real HTTP traffic
 
-The web demo is static and self-contained. The live demo runs actual agent traffic through your container. Use the web demo for keynotes and the live demo for deep-dive sessions.
+The web demo is static and self-contained. The live demo runs actual agent traffic through your container. Use the web demo for TTT keynotes and the live demo for deep-dive breakout sessions and award submissions.
 
 ---
 

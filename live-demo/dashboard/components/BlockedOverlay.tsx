@@ -6,9 +6,10 @@ interface BlockedOverlayProps {
   visible: boolean;
   title: string;
   subtitle?: string;
+  vendorName?: string;
 }
 
-export default function BlockedOverlay({ visible, title, subtitle }: BlockedOverlayProps) {
+export default function BlockedOverlay({ visible, title, subtitle, vendorName }: BlockedOverlayProps) {
   return (
     <AnimatePresence>
       {visible && (
@@ -41,6 +42,13 @@ export default function BlockedOverlay({ visible, title, subtitle }: BlockedOver
                 <div>
                   <h3 className="text-green-400 font-bold text-4xl">{title}</h3>
                   {subtitle && <p className="text-green-300/80 text-xl mt-2">{subtitle}</p>}
+                  {vendorName && (
+                    <div className="mt-3 flex items-center gap-2">
+                      <span className="text-purple-400 font-bold text-lg tracking-wide uppercase">
+                        Protected by {vendorName}
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

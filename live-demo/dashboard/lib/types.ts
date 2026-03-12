@@ -30,6 +30,7 @@ export interface LiveEvent {
   tool_name?: string;
   phase?: number;
   title?: string;
+  vendor?: string;
 }
 
 export interface AuditEntry {

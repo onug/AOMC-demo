@@ -169,6 +169,14 @@ The demos are based on two papers produced by the ONUG Agentic AI Overlay Workin
 | [Use Cases](docs/use-cases.md) | Initial use cases and top 10 from community poll |
 | [Security Standards](docs/security-standards.md) | NIST SP 800-53 AI Control Overlays, MAESTRO seven-layer mapping, integration guidance |
 
+## Vendor Customization
+
+Security vendors can fork this repo and inject their product names, logos, and branding into Scenario 2. When your control blocks an attack phase, the audience sees **"Protected by YourProduct"** on the blocked overlay — your product takes credit for each mitigation.
+
+Vendor demos can be used for **TTT (Train-the-Trainer) sessions** at the AI Networking Summit and submitted for an **Agentic AI Overlay Award**.
+
+See the **[Vendor Integration Guide](docs/vendor-guide.md)** for full setup instructions covering both demos.
+
 ## Frameworks
 
 - [MAESTRO](https://cloudsecurityalliance.org/) (CSA) — Multi-Agent Environment Security Taxonomy & Reference for Orchestration

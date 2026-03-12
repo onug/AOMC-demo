@@ -33,3 +33,15 @@ Your container implements two endpoints:
 - `POST /check` — receives `{control, agent_id, params, context}`, returns `{allowed, result, detail}`
 
 See the full guide for params per control, env var patterns, and fallback behavior.
+
+## What Your Audience Sees
+
+When your vendor container blocks an attack phase during S2:
+- **Blocked overlay**: "Protected by YourCompany ProductName" in purple text on the green shield
+- **AOMC panel**: Purple badge with your product name on the enforcing control
+- **Event feed + audit trail**: Entries prefixed with `[YourCompany ProductName]`
+- **Finale slide**: "N of 6 controls demonstrated by YourCompany ProductName"
+
+## TTT Sessions & Award
+
+Vendor demos built from this repo can be presented during **TTT (Train-the-Trainer) sessions** at the AI Networking Summit and submitted for an **Agentic AI Overlay Award**. See the [Vendor Integration Guide](../../docs/vendor-guide.md) for details.
