@@ -10,9 +10,79 @@ Vendor demos built from this repo can be used in two ways at the summit:
 
 1. **TTT (Train-the-Trainer) Sessions** — Present your customized demo during your assigned TTT session. Walk the audience through Scenario 1 (unprotected), then Scenario 2 with your product blocking each attack phase. The web demo is ideal for the main stage; the live demo is ideal for deep-dive breakout sessions.
 
-2. **Agentic AI Overlay Award** — Submit your vendor demo for consideration for an Agentic AI Overlay Award. Submissions are evaluated on how effectively your product demonstrates enforcement of the six AOMC controls against a real attack sequence. Both partial-coverage (2-3 controls) and full-coverage (all 6) submissions are welcome.
+2. **Agentic AI Overlay Award** — Submit your vendor demo for consideration for an Agentic AI Overlay Award. See the full submission timeline and guidelines below.
 
 To participate in either, fork this repo, follow the setup instructions below, and coordinate with the ONUG working group for scheduling and submission details.
+
+---
+
+## Agentic AI Overlay Award — Submission Guide
+
+### Timeline
+
+| Date | Milestone |
+|------|-----------|
+| **March 14, 2026 (Fri)** | Call for Submissions announced — repo access granted, vendor guide shared |
+| **March 21, 2026 (Fri)** | Intent to Submit deadline — vendors confirm participation + which controls they'll cover |
+| **March 28, 2026 (Fri)** | Office Hours #1 — live walkthrough of repo setup, vendor integration, Q&A |
+| **April 11, 2026 (Fri)** | Checkpoint — vendors share working demo (screen recording or live) for early feedback |
+| **April 18, 2026 (Fri)** | Office Hours #2 — final Q&A, common issues, judging criteria walkthrough |
+| **April 27, 2026 (Sun)** | **Final Submission Deadline** — all materials due by 11:59 PM ET |
+
+### What You Need to Demo
+
+**You only need to show Scenario 2 (The Layered Defense)** — your product blocking the rogue agent attack with AOMC controls active.
+
+Nick Lippis will present Scenario 1 (The Catastrophic Cascade) as part of his keynote, establishing the unprotected attack baseline for the audience. S1 will also play on monitors throughout the conference, on the conference mobile app, and on the Hopin platform for remote attendees. By the time your demo runs, every audience member — in-person and remote — will already understand the attack.
+
+Showing S1 in your submission is optional. If you want to include it for a complete narrative, you can, but it is not required and will not affect judging.
+
+### Choose Your Demo Format
+
+You can submit either a **web demo** or a **live infrastructure demo** (or both):
+
+| Format | Effort | What It Shows |
+|--------|--------|---------------|
+| **Web Demo** | Lower — edit a TypeScript config file | Branded slides, control panel badges, blocked overlays with your product name |
+| **Live Demo** | Higher — build a Docker container | Real HTTP agent traffic routed through your product, real-time blocking decisions, vendor-attributed audit trail, event feed, and dashboard branding |
+
+The **live demo offers significantly more opportunities to showcase your product** — judges see your actual enforcement logic handling real attack traffic, your product name attributed on every block in the event feed and audit trail, and real-time decision latency. If your product can participate in HTTP-based control checks, the live demo is the stronger submission.
+
+### How to Submit
+
+Vendors should **fork the AOMC-demo repo** (private fork is fine) and submit via one of:
+
+1. **Preferred: Pull request to a `submissions/` branch** — vendors open a PR against a dedicated submissions branch on the main repo. This keeps everything in one place, lets judges run each submission, and preserves git history. Each PR should include:
+   - **Web demo:** `web-demo/lib/vendor-config.ts` + logo in `web-demo/public/`
+   - **Live demo:** `live-demo/vendors/<vendor-name>/` + `docker-compose.vendor.yml`
+   - A 2-3 minute **screen recording** of S2 running with your product blocking the attack
+   - Brief README noting which controls you cover and any setup prerequisites
+
+2. **Alternative: Private repo link** — if you can't submit via PR (e.g., proprietary check logic you don't want public), share a private repo link + grant read access to the judges. Same deliverables.
+
+### Asking Questions
+
+| Channel | Purpose |
+|---------|---------|
+| **GitHub Discussions** (on the AOMC-demo repo) | Primary async Q&A — tagged `vendor-submissions`. Answers are visible to all vendors for transparency |
+| **Office Hours** (March 28 + April 18) | Live video calls for walkthroughs and real-time debugging. Recorded and shared afterward |
+| **Email** (working group distribution list) | Private questions, NDA-sensitive topics, scheduling |
+
+### Judging
+
+**Judges:** ONUG Agentic AI Working Group members
+
+**Criteria:**
+
+| Criteria | Weight | Description |
+|----------|--------|-------------|
+| Control Coverage | 25% | How many of the 6 AOMC controls does the product enforce? |
+| Detection Fidelity | 25% | Does the product correctly block the rogue agent at each phase? False positives/negatives? |
+| Integration Quality | 20% | Clean implementation, follows vendor interface contract, responsive check latency (<5s) |
+| Presentation Impact | 15% | Does the demo clearly show what the product does? Is the branding effective on stage? |
+| Production Readiness | 15% | Could this realistically protect a multi-agent enterprise deployment? |
+
+Both partial-coverage (2-3 controls) and full-coverage (all 6) submissions are eligible. Partial-coverage entries are judged on the quality of their covered controls, not penalized for uncovered ones.
 
 ## Architecture Overview
 
