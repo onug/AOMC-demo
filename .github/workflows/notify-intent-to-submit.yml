@@ -1,0 +1,59 @@
+name: Notify — Intent to Submit
+
+on:
+  issues:
+    types: [opened]
+
+jobs:
+  notify:
+    if: contains(github.event.issue.labels.*.name, 'intent-to-submit')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          secure: true
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "New Intent to Submit: ${{ github.event.issue.title }}"
+          to: nick@onug.net, Tony@onug.net, joann@onug.net
+          from: AOMC Demo Bot <${{ secrets.SMTP_USERNAME }}>
+          body: |
+            A new vendor has declared intent to submit for the Agentic AI Overlay Award.
+
+            Title: ${{ github.event.issue.title }}
+            Submitted by: ${{ github.event.issue.user.login }}
+            Link: ${{ github.event.issue.html_url }}
+
+            ───────────────────────────────
+
+            ${{ github.event.issue.body }}
+
+      - name: Send Slack notification
+        if: ${{ secrets.SLACK_WEBHOOK_URL != '' }}
+        uses: slackapi/slack-github-action@v2
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            {
+              "text": "New Intent to Submit for the Agentic AI Overlay Award",
+              "blocks": [
+                {
+                  "type": "header",
+                  "text": {
+                    "type": "plain_text",
+                    "text": "New Intent to Submit"
+                  }
+                },
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*${{ github.event.issue.title }}*\nSubmitted by: ${{ github.event.issue.user.login }}\n<${{ github.event.issue.html_url }}|View on GitHub>"
+                  }
+                }
+              ]
+            }
