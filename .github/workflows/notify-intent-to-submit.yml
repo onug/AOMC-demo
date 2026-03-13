@@ -2,7 +2,7 @@ name: Notify — Intent to Submit
 
 on:
   issues:
-    types: [opened]
+    types: [opened, labeled]
 
 jobs:
   notify:
@@ -18,7 +18,7 @@ jobs:
           username: ${{ secrets.SMTP_USERNAME }}
           password: ${{ secrets.SMTP_PASSWORD }}
           subject: "New Intent to Submit: ${{ github.event.issue.title }}"
-          to: nick@onug.net, Tony@onug.net, joann@onug.net, AOMC-Bot@onug.net
+          to: nick@onug.net, Tony@onug.net, joann@onug.net, AOMC-Bot@onug.net, gregh@onug.net, henry@onug.net, james@onug.net, paul@onug.net, andrea@onug.net, bill@onug.net, jesi@onug.net, parantap.lahiri@gmail.com, Peter.Campbell@evernorth.com
           from: AOMC Demo Bot <AOMC-Bot@onug.net>
           body: |
             A new vendor has declared intent to submit for the Agentic AI Overlay Award.
