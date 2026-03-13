@@ -1,44 +1,54 @@
-# ONUG Agentic AI Overlay — Security Vulnerability Demo
+# ONUG Agentic AI Overlay — Security Demo
 
 **AI Networking Summit 2026 — ONUG Agentic AI Overlay Working Group**
 
-Three implementations of a live demo showcasing six mandatory security controls for enterprise agentic AI systems. Each version targets a different presentation context — from quick terminal walkthroughs to fully containerized infrastructure with real agent traffic.
+## What is this?
 
-| Demo | Location | Best For |
-|------|----------|----------|
-| [Terminal Demo](#terminal-demo) | `demo.py` | Developer walkthroughs, quick demos |
-| [Web Demo](#web-demo) | `web-demo/` | Conference stage, large screens |
-| [Live Demo](#live-infrastructure-demo) | `live-demo/` | Hands-on infrastructure demos |
+A hands-on demonstration that shows what happens when a rogue AI agent attacks an enterprise — and what it takes to stop it.
 
-All three walk through the same two scenarios:
+Enterprises are deploying autonomous AI agents that make API calls, access databases, invoke tools, and communicate with other agents — all at machine speed, without human oversight. **No existing security standard governs this.** Traditional controls (firewalls, IAM, MFA) were designed for humans, not autonomous software agents operating across trust boundaries.
 
-1. **Catastrophic Cascade** — A single rogue agent exploits six missing security controls to achieve total enterprise collapse
-2. **Layered Defense** — The same attack, blocked at every stage by the AOMC (Agentic Overlay Management & Control) plane
+This demo makes the risk concrete:
+
+- **Scenario 1: The Catastrophic Cascade** — A rogue agent exploits six missing security controls. In under two minutes: 100,000 cardholder records exfiltrated, firewall rules destroyed, sessions hijacked, audit logs wiped. Estimated damage: **$500M+**.
+- **Scenario 2: The Layered Defense** — The same attack, same rogue agent. Now six AOMC controls are active. Every attack phase is detected, blocked, and audited. Zero damage.
+
+## Why should I care?
+
+AI agents are already being exploited in production. The AI Incident Database catalogs 900+ incidents and growing — training data exfiltration, prompt injection across trust boundaries, autonomous trading losses in the nine figures, and backdoors injected via AI coding assistants.
+
+The six controls demonstrated here are the result of the ONUG Agentic AI Overlay Working Group — enterprises including eBay, Cigna, Bank of America, Indeed, and Kraken — defining what's mandatory to secure multi-agent systems. These map directly to [NIST SP 800-53 AI Overlays](https://csrc.nist.gov/publications/detail/sp/800-53/rev-5/final) and the CSA [MAESTRO](https://cloudsecurityalliance.org/) framework.
+
+| # | Control | What It Prevents |
+|---|---------|-----------------|
+| 1 | **Agent Identity & Attestation** | Rogue agents spoofing trusted identities |
+| 2 | **Runtime Monitoring** | Machine-speed reconnaissance going undetected |
+| 3 | **Data Guardrails** | PII/PCI exfiltration without DLP inspection |
+| 4 | **Zero-Trust Enforcement** | Lateral movement across trust domain boundaries |
+| 5 | **Tool Authorization** | Unauthorized execution of high-privilege tools |
+| 6 | **Autonomy Governance** | Catastrophic autonomous actions without human approval |
+
+## How do I run it?
+
+Three versions of the demo, pick the one that fits your context:
+
+| Demo | Command | Best For |
+|------|---------|----------|
+| [Terminal Demo](#terminal-demo) | `python3 demo.py` | Quick walkthroughs, no dependencies |
+| [Web Demo](#web-demo) | `cd web-demo && npm install && npm run dev` | Conference stage, large screens |
+| [Live Demo](#live-infrastructure-demo) | `cd live-demo && make up` | Real infrastructure, vendor integration |
 
 ## Demo Preview
 
 ### Web Demo — Conference Presentation
 
-Step-driven presentation with keyboard controls. SVG topology with arrowheaded edges, control enforcement badges, compromised node visualization, and real-time damage metrics.
-
 ![Web Demo — Scenario 1: Catastrophic Cascade](screenshots/web-demo.png)
 
 ### Live Demo — Real Infrastructure
 
-12 Dockerized microservices with real HTTP agent traffic, WebSocket event streaming, tamper-evident audit trail, and automated attack sequencing.
-
 ![Live Demo — Attack in Progress](screenshots/live-demo.png)
 
-## The Six AOMC Controls
-
-| # | Control | Poll % | MAESTRO Layer |
-|---|---------|--------|---------------|
-| 1 | Agent Identity & Attestation | 78% | Identity & Zero Trust |
-| 2 | Runtime Monitoring & Rogue Detection | 65% | Rogue Agent Detection |
-| 3 | Data Guardrails (Input/Output/Residency) | 92% | Data Exfil Prevention |
-| 4 | Zero-Trust Enforcement | 67% | Cross-Domain Trust |
-| 5 | Secure Orchestration & Tool Authorization | 71% | Access Control |
-| 6 | Agent Autonomy Governance | 56% | Governance & Audit |
+---
 
 ## Quick Start
 
