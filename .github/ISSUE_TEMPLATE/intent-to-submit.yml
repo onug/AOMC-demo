@@ -70,6 +70,17 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: sponsor
+    attributes:
+      label: Is your company a sponsor of the AI Networking Summit (May 13-14, 2026, Frisco/Dallas)?
+      options:
+        - "Yes"
+        - "No"
+        - "In discussions / pending"
+    validations:
+      required: true
+
   - type: textarea
     id: description
     attributes:

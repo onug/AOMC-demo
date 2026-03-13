@@ -8,6 +8,8 @@ We're excited to invite your team to submit a demo for the **Agentic AI Overlay 
 
 The award recognizes security vendors who demonstrate enforcement of the six AOMC (Agentic Overlay Mandatory Controls) against a live rogue agent attack sequence. Submissions are evaluated by the **ONUG Agentic AI Working Group** members.
 
+The AI Networking Summit takes place **May 13-14, 2026 in Frisco/Dallas**. Please note your company's sponsorship status when filing your Intent to Submit.
+
 ## What You Need to Demo
 
 **You only need to show Scenario 2 (The Layered Defense)** — your product blocking the rogue agent attack with all AOMC controls active.
