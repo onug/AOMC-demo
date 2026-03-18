@@ -1,12 +1,18 @@
 /**
  * VENDOR CONFIG: Zscaler — Zero Trust Exchange + AI Guard + AI-SPM
  *
- * Full 6-control coverage. See vendor-config.zscaler.ts for the standalone file.
+ * Full 6-control coverage using Zscaler's AI security portfolio:
+ *   - Zero Trust Exchange: Agent identity (1), Zero-trust enforcement (4)
+ *   - AI Guard: Runtime monitoring (2), Data guardrails (3)
+ *   - AI-SPM: Tool authorization (5), Autonomy governance (6)
+ *
+ * To activate: copy this file over vendor-config.ts
+ *   cp vendor-config.zscaler.ts vendor-config.ts
  */
 
 import { VendorConfig } from './types';
 
-const vendorConfig: VendorConfig | null = {
+const vendorConfig: VendorConfig = {
   name: 'Zscaler',
   tagline: 'Zero Trust Security for the Agentic Enterprise',
   website: 'https://www.zscaler.com',
