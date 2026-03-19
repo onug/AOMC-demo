@@ -1,5 +1,9 @@
 # Zscaler — AOMC Demo Submission
 
+## Brief Description
+
+**Zscaler Zero Trust Exchange, AI Guard, and AI-SPM provide unified enforcement of all six AOMC controls through identity-first architecture, inline behavioral analytics, and policy-driven governance.** The platform verifies every agent's identity and attestation, detects anomalous behavior in real-time, enforces data residency and DLP policies, eliminates cross-domain lateral movement, controls tool invocation at the API level, and requires human approval for high-risk autonomous actions — all integrated in a single control plane.
+
 ## Coverage: 6 of 6 Controls
 
 | # | Control | Zscaler Product | Enforcement |
