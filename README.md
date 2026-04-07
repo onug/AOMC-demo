@@ -115,6 +115,7 @@ Dashboard at [http://localhost:3000](http://localhost:3000). [Full documentation
 │   ├── scaling-and-deployment.md       # Deployment strategies and recommendations
 │   ├── use-cases.md                    # Enterprise use cases from community
 │   ├── security-standards.md           # NIST + MAESTRO framework mappings
+│   ├── ONUG_AOMC_Vendor_Capabilities.docx  # Vendor capabilities matrix (NIST AI RMF)
 │   ├── terminal-demo.md               # Terminal demo documentation
 │   ├── web-demo.md                    # Web demo documentation
 │   └── live-demo.md                   # Live infrastructure demo documentation
@@ -178,6 +179,7 @@ The demos are based on two papers produced by the ONUG Agentic AI Overlay Workin
 | [Scaling & Deployment](docs/scaling-and-deployment.md) | Key observations, strategic recommendations, operational targets, deployment patterns |
 | [Use Cases](docs/use-cases.md) | Initial use cases and top 10 from community poll |
 | [Security Standards](docs/security-standards.md) | NIST SP 800-53 AI Control Overlays, MAESTRO seven-layer mapping, integration guidance |
+| [Vendor Capabilities Matrix](docs/ONUG_AOMC_Vendor_Capabilities.docx) | Six AOMC controls mapped to NIST AI RMF 1.0, required vendor security capabilities and invariants |
 
 ## Vendor Customization
 
