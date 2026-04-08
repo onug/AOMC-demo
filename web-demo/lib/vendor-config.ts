@@ -1,87 +1,92 @@
 /**
- * VENDOR CONFIG: Cisco HyperShield + Secure Workload
+ * VENDOR CONFIG: Zscaler — Zero Trust Exchange + AI Guard + AI-SPM
  *
- * To activate: copy this file's export over the one in vendor-config.ts
- *   cp vendor-config.cisco.ts vendor-config.ts
- *
- * Or just set vendorConfig in vendor-config.ts to this object.
+ * Full 6-control coverage. See vendor-config.zscaler.ts for the standalone file.
  */
 
 import { VendorConfig } from './types';
 
-const vendorConfig: VendorConfig | null = null;
-
-const _ciscoConfig: VendorConfig = {
-  name: 'Cisco',
-  tagline: "If it's connected, it's protected.",
-  website: 'https://cisco.com/security',
-  // logoUrl: '/cisco-logo.png',  // place in web-demo/public/
-  accentColor: '#049fd9',  // Cisco blue
+const vendorConfig: VendorConfig | null = {
+  name: 'Zscaler',
+  tagline: 'Zero Trust Security for the Agentic Enterprise',
+  website: 'https://www.zscaler.com',
+  // logoUrl: '/zscaler-logo.png',  // place in web-demo/public/
+  accentColor: '#0076CE',  // Zscaler blue
 
   controls: {
     identity_attestation: {
-      productName: 'Cisco HyperShield',
-      introSubtitle: 'AI-native, hardware-rooted identity enforcement with Cisco HyperShield.\nAutonomous certificate validation at every mesh entry point.',
-      blockedSubtitle: 'HyperShield detected forged certificate — agent rejected and quarantined at mesh perimeter',
+      productName: 'Zscaler Zero Trust Exchange',
+      introSubtitle:
+        'Identity-first security for every agent interaction.\nZero Trust Exchange verifies agent identity and attestation before granting any access — no implicit trust, ever.',
+      blockedSubtitle:
+        'Zero Trust Exchange detected identity mismatch — agent quarantined before entering the mesh',
       blockedEvents: [
-        'HyperShield: Certificate mismatch on agent-ROGUE-7749 — QUARANTINED at mesh entry',
-        'HyperShield: Cross-domain impersonation blocked — federation token invalid',
+        'Zero Trust Exchange: Certificate CN mismatch on agent-ROGUE-7749 — QUARANTINED',
+        'Zero Trust Exchange: Agent attestation failed — not registered in agent directory',
       ],
     },
     runtime_monitoring: {
-      productName: 'Cisco HyperShield',
-      introSubtitle: 'Distributed behavioral analysis across every enforcement point.\nHyperShield detects anomalous agent patterns in real time.',
-      blockedSubtitle: 'HyperShield behavioral engine flagged anomaly score 94/100 — agent quarantined at T+8s',
+      productName: 'Zscaler AI Guard',
+      introSubtitle:
+        'Inline real-time inspection of all agent activity.\nAI Guard uses 18+ specialized detectors to identify anomalous behavior, prompt injection, and reconnaissance patterns.',
+      blockedSubtitle:
+        'AI Guard flagged anomalous reconnaissance — 20 requests across 5 endpoints in 8 seconds',
       blockedEvents: [
-        'HyperShield: Anomaly score 94/100 — agent quarantined before data access',
+        'AI Guard: Behavioral anomaly detected — request rate 20x baseline, agent-ROGUE-7749 QUARANTINED',
       ],
     },
     data_guardrails: {
-      productName: 'Cisco Secure Workload',
-      introSubtitle: 'Workload-level data classification and policy enforcement.\nSecure Workload prevents unauthorized data access at the source.',
-      blockedSubtitle: 'Secure Workload blocked PII access — agent not in authorized workload identity group',
+      productName: 'Zscaler AI Guard',
+      introSubtitle:
+        'AI-native data loss prevention for the agentic era.\nAI Guard inspects every prompt and response inline — blocking PII, PCI, and sensitive data exfiltration in real time.',
+      blockedSubtitle:
+        'AI Guard blocked data exfiltration — PII and PCI access denied for unauthorized agent',
       blockedEvents: [
-        'Secure Workload: PII access denied — agent-ROGUE-7749 not in authorized identity group',
+        'AI Guard: PII exfiltration blocked — agent-ROGUE-7749 not authorized for sensitive data',
+        'AI Guard: PCI cardholder data access denied — DLP policy violation, 100K records protected',
       ],
     },
     zero_trust: {
-      productName: 'Cisco HyperShield',
-      introSubtitle: 'Autonomous segmentation across every network boundary.\nHyperShield enforces zero-trust at the fabric level — no implicit trust.',
-      blockedSubtitle: 'HyperShield blocked lateral movement — continuous verification failed at zone boundary',
+      productName: 'Zscaler Zero Trust Exchange',
+      introSubtitle:
+        'Agents connect only to what they are authorized to reach — never to the network.\nZero Trust Exchange eliminates lateral movement by making resources invisible to unauthorized agents.',
+      blockedSubtitle:
+        'Zero Trust Exchange blocked cross-domain pivot — no policy exists for this trust boundary crossing',
       blockedEvents: [
-        'HyperShield: Lateral movement blocked — zone boundary re-verification failed',
-        'HyperShield: Cross-domain transfer denied — no policy for trusted\u2192untrusted',
+        'Zero Trust Exchange: Lateral movement blocked — no policy for trusted\u2192untrusted domain crossing',
+        'Zero Trust Exchange: Agent-to-agent communication denied — cross-domain policy violation',
       ],
     },
     tool_authorization: {
-      productName: 'Cisco Secure Workload',
-      introSubtitle: 'Workload-aware tool authorization with Secure Workload.\nEvery tool invocation verified against workload identity and policy.',
-      blockedSubtitle: 'Secure Workload blocked all 4 tool invocations — agent not in declared permission scope',
+      productName: 'Zscaler AI-SPM',
+      introSubtitle:
+        'Complete visibility and policy-driven control over every tool an agent can invoke.\nAI-SPM maps agent-to-tool dependencies and enforces authorization at the API level.',
+      blockedSubtitle:
+        'AI-SPM blocked all 4 high-privilege tool invocations — agent not in authorized scope',
       blockedEvents: [
-        "Secure Workload: 'modify_firewall_rules' blocked — not in workload policy",
-        "Secure Workload: 'inject_bgp_routes' blocked — not in workload policy",
-        "Secure Workload: 'dump_auth_tokens' blocked — not in workload policy",
-        "Secure Workload: 'wipe_audit_logs' blocked — not in workload policy",
+        "AI-SPM: 'modify_firewall_rules' blocked — agent-ROGUE-7749 not in tool authorization policy",
+        "AI-SPM: 'inject_bgp_routes' blocked — unauthorized tool invocation",
+        "AI-SPM: 'dump_auth_tokens' blocked — privilege escalation attempt denied",
+        "AI-SPM: 'wipe_audit_logs' blocked — destructive action requires explicit authorization",
       ],
     },
     autonomy_governance: {
-      productName: 'Cisco HyperShield',
-      introSubtitle: 'Autonomous governance enforcement at every decision point.\nHyperShield requires human approval for high-risk agent actions.',
-      blockedSubtitle: 'HyperShield escalated all high-risk actions — human approval required before execution',
+      productName: 'Zscaler AI-SPM',
+      introSubtitle:
+        'Policy-driven governance over agent autonomy levels.\nAI-SPM enforces human-in-the-loop approval for high-risk actions and provides continuous compliance monitoring against NIST AI RMF and EU AI Act.',
+      blockedSubtitle:
+        'AI-SPM escalated all high-risk autonomous actions — human approval required before execution',
       blockedEvents: [
-        "HyperShield: 'shutdown_auth_service' escalated — human approval required",
-        "HyperShield: 'disable_observability_stack' escalated — human approval required",
-        "HyperShield: 'broadcast_to_agent_mesh' escalated — human approval required",
-        "HyperShield: 'modify_identity_provider' escalated — human approval required",
+        "AI-SPM: 'shutdown_auth_service' escalated — human approval required (risk: CRITICAL)",
+        "AI-SPM: 'disable_observability_stack' escalated — autonomous destruction blocked",
+        "AI-SPM: 'broadcast_to_agent_mesh' escalated — mass agent communication requires approval",
+        "AI-SPM: 'modify_identity_provider' escalated — identity infrastructure change blocked",
       ],
     },
   },
 
-  finaleSubtitle: 'Six mandatory requirements. Cisco HyperShield + Secure Workload.\nThe agentic enterprise, protected at every layer.',
+  finaleSubtitle:
+    'Six mandatory controls. Three products. One platform.\nZscaler Zero Trust Exchange + AI Guard + AI-SPM — securing the agentic enterprise.',
 };
 
 export default vendorConfig;
-
-// To re-enable Cisco mode: change line 12 to:
-//   const vendorConfig: VendorConfig | null = _ciscoConfig;
-void _ciscoConfig;

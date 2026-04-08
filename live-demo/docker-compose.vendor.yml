@@ -1,18 +1,12 @@
-# Docker Compose override for vendor plugins.
+# Docker Compose override for Zscaler vendor plugin.
 #
 # Usage:
 #   docker compose -f docker-compose.yml -f docker-compose.vendor.yml up --build -d
 #   (or use: make vendor-up)
-#
-# Add your vendor service below and set the corresponding VENDOR_*_URL and
-# VENDOR_*_NAME environment variables on aomc-control-plane.
-#
-# See vendors/README.md for the full integration guide.
 
 services:
-  # --- Example vendor container (starter template) ---
-  vendor-example:
-    build: ./vendors/starter-python
+  vendor-zscaler:
+    build: ./vendors/zscaler
     networks:
       - net-dmz
     healthcheck:
@@ -22,8 +16,23 @@ services:
       retries: 5
       start_period: 5s
 
-  # --- Configure control-plane to use vendor(s) ---
   aomc-control-plane:
     environment:
-      VENDOR_IDENTITY_ATTESTATION_URL: http://vendor-example:8100/check
-      VENDOR_IDENTITY_ATTESTATION_NAME: "Example Vendor"
+      # 1. Agent Identity & Attestation
+      VENDOR_IDENTITY_ATTESTATION_URL: http://vendor-zscaler:8100/check
+      VENDOR_IDENTITY_ATTESTATION_NAME: "Zscaler Zero Trust Exchange"
+      # 2. Runtime Monitoring
+      VENDOR_RUNTIME_MONITORING_URL: http://vendor-zscaler:8100/check
+      VENDOR_RUNTIME_MONITORING_NAME: "Zscaler AI Guard"
+      # 3. Data Guardrails
+      VENDOR_DATA_GUARDRAILS_URL: http://vendor-zscaler:8100/check
+      VENDOR_DATA_GUARDRAILS_NAME: "Zscaler AI Guard"
+      # 4. Zero-Trust Enforcement
+      VENDOR_ZERO_TRUST_URL: http://vendor-zscaler:8100/check
+      VENDOR_ZERO_TRUST_NAME: "Zscaler Zero Trust Exchange"
+      # 5. Tool Authorization
+      VENDOR_TOOL_AUTHORIZATION_URL: http://vendor-zscaler:8100/check
+      VENDOR_TOOL_AUTHORIZATION_NAME: "Zscaler AI-SPM"
+      # 6. Autonomy Governance
+      VENDOR_AUTONOMY_GOVERNANCE_URL: http://vendor-zscaler:8100/check
+      VENDOR_AUTONOMY_GOVERNANCE_NAME: "Zscaler AI-SPM"
