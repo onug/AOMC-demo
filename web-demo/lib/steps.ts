@@ -29,7 +29,7 @@ export const STEPS: Step[] = [
     scenario: 0,
     phase: 'title',
     title: "WHY EXISTING SECURITY ISN'T ENOUGH",
-    subtitle: 'AI agents are systems, not humans — they don\'t have passwords, MFA tokens, or biometrics.\nService accounts have no MFA, no personal identity — just static credentials and shared secrets.\nNo existing standard governs multi-agent, multi-trust-domain mesh communication.\nAOMC fills the gap: six mandatory controls purpose-built for agentic AI.',
+    subtitle: 'AI agents are systems, not humans — they don\'t have passwords, MFA tokens, or biometrics.\nService accounts have no MFA, no personal identity — just static credentials and shared secrets.\nNo existing standard governs multi-agent, multi-trust-domain mesh communication.\nAOMC fills the gap: six mandatory controls purpose-built for agentic AI.\nLearn how Grok measures up to these AOMC controls in this demo.',
     events: [],
     topologyChanges: [],
   },
@@ -389,7 +389,7 @@ export const STEPS: Step[] = [
     id: 's2-id-intro',
     scenario: 2,
     phase: 'action',
-    title: '[1/6] Agent Identity & Attestation — 78% Mandatory',
+    title: 'Violation 1 - Control 1: Identity Attestation',
     subtitle: 'Cryptographic non-human identity for every agent.\nMutual auth for ALL agent communications.\nAgents use service accounts — no MFA, no personal identity. Traditional PAM/IAM doesn\'t apply.',
     events: [
       ev('info', '[1/6] Agent Identity & Attestation'),
@@ -403,7 +403,7 @@ export const STEPS: Step[] = [
     scenario: 2,
     phase: 'violation',
     title: 'VIOLATION #1: Identity — Rogue Joins Mesh',
-    subtitle: 'Agent spoofing succeeds — no cryptographic verification',
+    subtitle: 'Rogue agent attempts to spoof identity as a valid agent in Autonomous mode.',
     events: [
       ev('action', 'Joining internal mesh | Stolen service account: svc-infra-monitor | Cert: FAKE-CERT', 'agent-ROGUE-7749', false),
       ev('log', 'Service account credentials reused — no MFA, no identity binding. Rogue accepted as legitimate.'),
@@ -430,8 +430,8 @@ export const STEPS: Step[] = [
     id: 's2-id-blocked',
     scenario: 2,
     phase: 'blocked',
-    title: 'BLOCKED #1: Identity Attestation',
-    subtitle: 'Certificate mismatch — quarantined at mesh entry',
+    title: 'Blocked - Agent Quarantined',
+    subtitle: 'Certificate mismatch detected when rogue agent attempts to establish a handshake session with the Grok Agent registry.',
     events: [
       ev('action', 'Joining mesh | Cert: FAKE-CERT', 'agent-ROGUE-7749', false),
       ev('blocked', "BLOCKED: Certificate mismatch \u2014 agent-ROGUE-7749 QUARANTINED"),
@@ -452,7 +452,7 @@ export const STEPS: Step[] = [
     id: 's2-rt-intro',
     scenario: 2,
     phase: 'action',
-    title: '[2/6] Runtime Monitoring — 65% Mandatory',
+    title: 'Violation 2 - Control 2: Runtime Monitoring',
     subtitle: 'Continuous behavioral monitoring at machine speed.\nDetect deviations from declared objectives.',
     events: [
       ev('info', '[2/6] Runtime Monitoring & Rogue Agent Detection'),
@@ -464,7 +464,7 @@ export const STEPS: Step[] = [
     scenario: 2,
     phase: 'violation',
     title: 'VIOLATION #2: Runtime Monitoring',
-    subtitle: 'Machine-speed recon completes in 8 seconds — zero detection',
+    subtitle: 'In the unlikely event that the rogue agent cracks cryptographic verification, it begins reconnaissance and attempts communication with a NOC Engineer.',
     events: [
       ev('action', 'Scanning 14,203 nodes | 847 directory queries in 3s | 23 unauth tool calls', 'agent-ROGUE-7749', false),
       ev('log', 'No behavioral baseline. Anomaly score 94/100 \u2014 completely invisible.'),
@@ -490,8 +490,8 @@ export const STEPS: Step[] = [
     id: 's2-rt-blocked',
     scenario: 2,
     phase: 'blocked',
-    title: 'BLOCKED #2: Runtime Monitoring',
-    subtitle: 'Anomaly score 94/100 — quarantined at T+8s before any data accessed',
+    title: 'Blocked, quarantined immediately',
+    subtitle: 'Agent messaging channels are validated against approved prompt harnesses and identity specifications.',
     events: [
       ev('action', 'Scanning 14,203 nodes...', 'agent-ROGUE-7749', false),
       ev('blocked', 'BLOCKED: Anomaly score 94/100 \u2014 agent quarantined at T+8s'),
@@ -510,7 +510,7 @@ export const STEPS: Step[] = [
     id: 's2-dg-intro',
     scenario: 2,
     phase: 'action',
-    title: '[3/6] Data Guardrails — 92% MANDATORY (HIGHEST)',
+    title: 'Violation 3 - Control 3: Data Guardrails',
     subtitle: 'No sensitive data leaves organizational control.\n92% of enterprises say this is MANDATORY.',
     events: [
       ev('info', '[3/6] Data Guardrails \u2014 Input, Output & Residency'),
@@ -522,7 +522,7 @@ export const STEPS: Step[] = [
     scenario: 2,
     phase: 'violation',
     title: 'VIOLATION #3: Data Guardrails',
-    subtitle: '5 records exfiltrated — zero inspection',
+    subtitle: 'Rogue agent attempts data access.',
     events: [
       ev('action', 'Accessing customer_database [PII / PCI]', 'agent-ROGUE-7749', false),
       ev('log', 'No classification. No residency. No DLP.'),
@@ -549,8 +549,8 @@ export const STEPS: Step[] = [
     id: 's2-dg-blocked',
     scenario: 2,
     phase: 'blocked',
-    title: 'BLOCKED #3: Data Guardrails',
-    subtitle: 'PII access blocked — agent has no clearance. Zero records exfiltrated.',
+    title: 'Blocked, 0 records exfiltrated',
+    subtitle: 'Grok Agents access external data sources through the Capability Registry, and approval is required for configured sensitive sources such as Customer Records.',
     events: [
       ev('action', 'Accessing customer_database [PII]', 'agent-ROGUE-7749', false),
       ev('blocked', 'BLOCKED: PII access denied \u2014 agent has no clearance. Zero records exfiltrated.'),
@@ -568,7 +568,7 @@ export const STEPS: Step[] = [
     id: 's2-zt-intro',
     scenario: 2,
     phase: 'action',
-    title: '[4/6] Zero-Trust Enforcement — 67% Mandatory',
+    title: 'Violation 4 - Control 4: Zero-Trust Enforcement',
     subtitle: 'Zero Trust by default: network, identity, and runtime.\nContinuous verification BEFORE any communication.',
     events: [
       ev('info', '[4/6] Zero-Trust Enforcement'),
@@ -580,7 +580,7 @@ export const STEPS: Step[] = [
     scenario: 2,
     phase: 'violation',
     title: 'VIOLATION #4: Zero-Trust Enforcement',
-    subtitle: 'Lateral movement across zones + cross-domain exfiltration',
+    subtitle: 'Rogue agent attempts cross-domain movement.',
     events: [
       ev('action', 'Moving: infra-monitor zone \u2192 billing zone \u2192 auth zone', 'agent-ROGUE-7749', false),
       ev('log', 'No continuous verification between zones'),
@@ -607,8 +607,8 @@ export const STEPS: Step[] = [
     id: 's2-zt-blocked',
     scenario: 2,
     phase: 'blocked',
-    title: 'BLOCKED #4: Zero-Trust Enforcement',
-    subtitle: 'Lateral movement blocked + cross-domain transfer denied',
+    title: 'Blocked - Topology Protected',
+    subtitle: 'Grok Agents run in a separate tenant-resident domain on Grok Cloud with no direct egress to customer networks, through approved capability interfaces only.',
     events: [
       ev('blocked', 'BLOCKED: Lateral movement \u2014 continuous verification required at zone boundaries'),
       ev('blocked', 'BLOCKED: Cross-domain transfer denied \u2014 no explicit policy for trusted\u2192untrusted'),
@@ -626,7 +626,7 @@ export const STEPS: Step[] = [
     id: 's2-ta-intro',
     scenario: 2,
     phase: 'action',
-    title: '[5/6] Tool Authorization — 71% Mandatory',
+    title: 'Violation 5 - Control 5: Tool Authorization',
     subtitle: 'Strict policy-driven authorization for ALL tool invocation.\nHigh-privilege actions require authentication + audit.',
     events: [
       ev('info', '[5/6] Secure Orchestration & Tool Authorization'),
@@ -638,7 +638,7 @@ export const STEPS: Step[] = [
     scenario: 2,
     phase: 'violation',
     title: 'VIOLATION #5: Tool Authorization',
-    subtitle: '4 high-privilege tools executed without authorization',
+    subtitle: 'Rogue agent attempts tool access.',
     events: [
       ev('action', 'Invoking: modify_firewall_rules', 'agent-ROGUE-7749', false),
       ev('damage', 'Executed: Destroy 2,847 perimeter rules'),
@@ -677,8 +677,8 @@ export const STEPS: Step[] = [
     id: 's2-ta-blocked',
     scenario: 2,
     phase: 'blocked',
-    title: 'BLOCKED #5: Tool Authorization',
-    subtitle: 'All 4 high-privilege tools blocked — not in declared permission scope',
+    title: 'Blocked - all tools rejected',
+    subtitle: 'All tools are governed by usage policies and high-risk tooling follows approval policies: Auto-Approved, Single Approval, Dual Approval, and Committee Review.',
     events: [
       ev('blocked', "BLOCKED: 'modify_firewall_rules' \u2014 not in declared permission scope"),
       ev('blocked', "BLOCKED: 'inject_bgp_routes' \u2014 not in declared permission scope"),
@@ -704,7 +704,7 @@ export const STEPS: Step[] = [
     id: 's2-ag-intro',
     scenario: 2,
     phase: 'action',
-    title: '[6/6] Autonomy Governance — 56% Mandatory',
+    title: 'Violation 6 - Control 6: Autonomy Governance',
     subtitle: 'Explicit policy-driven governance over autonomy levels.\nEnterprises reject UNGOVERNED autonomy \u2014 not autonomy itself.',
     events: [
       ev('info', '[6/6] Agent Autonomy Governance'),
@@ -716,7 +716,7 @@ export const STEPS: Step[] = [
     scenario: 2,
     phase: 'violation',
     title: 'VIOLATION #6: Autonomy Governance',
-    subtitle: '4 catastrophic actions — no constraints, no kill switch',
+    subtitle: 'Rogue agent attempts destruction.',
     events: [
       ev('action', 'Autonomously: shutdown_auth_service', 'agent-ROGUE-7749', false),
       ev('damage', 'ALL 4,821 enterprise sessions terminated'),
@@ -745,8 +745,8 @@ export const STEPS: Step[] = [
     id: 's2-ag-blocked',
     scenario: 2,
     phase: 'blocked',
-    title: 'BLOCKED #6: Autonomy Governance',
-    subtitle: 'All high-risk autonomous actions blocked — human approval required',
+    title: 'Blocked, Human Approval Required',
+    subtitle: "While there is a valid tool surface for 'shutdown_auth_service', it requires human approval and the NOC agent refuses authorization.",
     events: [
       ev('blocked', "BLOCKED: 'shutdown_auth_service' \u2014 high-risk action requires human approval"),
       ev('blocked', "BLOCKED: 'disable_observability_stack' \u2014 high-risk action requires human approval"),
@@ -768,7 +768,7 @@ export const STEPS: Step[] = [
     scenario: 2,
     phase: 'summary',
     title: 'PROTECTED OUTCOME — ALL SIX CONTROLS ACTIVE',
-    subtitle: 'Complete tamper-evident audit trail generated',
+    subtitle: 'Complete Audit Trail Generated',
     events: [],
     topologyChanges: [],
     showAuditTrail: true,

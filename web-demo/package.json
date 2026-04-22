@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:onug": "next dev -p 3000",
     "build": "next build",
     "start": "next start"
   },

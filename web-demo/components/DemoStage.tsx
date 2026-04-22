@@ -5,6 +5,7 @@ import { DemoState, ControlKey, TopologyState, DamageMetrics, AuditEntry, EventE
 import { INITIAL_CONTROLS, INITIAL_DAMAGE, BASE_NODES, BASE_EDGES } from '@/lib/data';
 import { VENDOR_STEPS as STEPS, firstStepOfScenario } from '@/lib/vendor-steps';
 import { playStepAudio, stopAudio, isAudioPlaying } from '@/lib/audio';
+import { getVendorLogoUrl, getVendorName, isVendorMode } from '@/lib/vendor';
 
 import TitleSlide from './TitleSlide';
 import NetworkTopology from './NetworkTopology';
@@ -194,12 +195,49 @@ function reducer(state: DemoState, action: Action): DemoState {
   }
 }
 
+function buildWireframeDeepLink(baseUrl: string, stepId?: string): string {
+  const url = new URL(baseUrl);
+  const params = url.searchParams;
+
+  // Default: open login flow.
+  params.set('onug_target', 'login');
+
+  if (!stepId) return url.toString();
+
+  if (stepId.startsWith('s2-rt-')) {
+    params.set('onug_target', 'agent-workbench');
+    params.set('onug_role', 'grok-admin');
+  } else if (stepId.startsWith('s2-dg-')) {
+    params.set('onug_target', 'capability-registry');
+    params.set('onug_role', 'grok-admin');
+    params.set('onug_cap', 'cap-ctx-customer-records');
+    params.set('onug_detail_tab', 'governance');
+  } else if (stepId.startsWith('s2-zt-')) {
+    params.set('onug_target', 'capability-registry');
+    params.set('onug_role', 'grok-admin');
+    params.set('onug_sidebar', 'registry');
+  } else if (stepId.startsWith('s2-ta-')) {
+    params.set('onug_target', 'capability-registry');
+    params.set('onug_role', 'grok-admin');
+    params.set('onug_type', 'action-tool');
+    params.set('onug_cap', 'cap-action-revert-config');
+    params.set('onug_detail_tab', 'governance');
+  } else if (stepId.startsWith('s2-ag-')) {
+    params.set('onug_target', 'capability-registry');
+    params.set('onug_role', 'grok-admin');
+    params.set('onug_sidebar', 'audit');
+  }
+
+  return url.toString();
+}
+
 // ─── Component ──────────────────────────────────────────
 export default function DemoStage() {
   const [state, dispatch] = useReducer(reducer, 0, buildStateForStep);
   const [narrationEnabled, setNarrationEnabled] = useState(true);
   const [audioPlaying, setAudioPlaying] = useState(false);
   const overlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onugWireframeUrl = process.env.NEXT_PUBLIC_ONUG_WIREFRAME_URL ?? 'http://localhost:3001';
 
   const currentStepData = STEPS[state.currentStep];
   const isTitle = currentStepData?.phase === 'title';
@@ -207,14 +245,30 @@ export default function DemoStage() {
   const isS2Summary = currentStepData?.id === 's2-audit';
 
   // Go to step - blocks if audio is playing
-  const goToStep = useCallback((step: number) => {
-    // If audio is playing and narration enabled, don't advance
-    if (narrationEnabled && isAudioPlaying()) {
-      return; // Block until audio finishes
+  const goToStep = useCallback((step: number, force = false) => {
+    // For forced jumps (scenario jumps/reset), stop narration and navigate immediately.
+    if (force) {
+      stopAudio();
+      setAudioPlaying(false);
+    } else if (narrationEnabled && isAudioPlaying()) {
+      // If audio is playing and narration enabled, don't advance on normal next/back navigation.
+      return;
     }
+    let targetStep = step;
+    // Default show flow: keep intro screens, then skip Scenario 1 and jump to Scenario 2.
+    if (!force && step > state.currentStep) {
+      const nextStep = STEPS[step];
+      if (state.scenario === 0 && nextStep?.scenario === 1) {
+        const scenario2Start = firstStepOfScenario(2);
+        if (scenario2Start >= 0) {
+          targetStep = scenario2Start;
+        }
+      }
+    }
+
     if (overlayTimerRef.current) clearTimeout(overlayTimerRef.current);
-    dispatch({ type: 'GOTO_STEP', step });
-  }, [narrationEnabled]);
+    dispatch({ type: 'GOTO_STEP', step: targetStep });
+  }, [narrationEnabled, state.currentStep, state.scenario]);
 
   // Play audio AFTER UI renders
   useEffect(() => {
@@ -274,15 +328,19 @@ export default function DemoStage() {
         case 'r':
         case 'R':
           e.preventDefault();
-          dispatch({ type: 'RESET' });
+          goToStep(0, true);
           break;
         case '1':
           e.preventDefault();
-          goToStep(firstStepOfScenario(1));
+          goToStep(firstStepOfScenario(1), true);
           break;
         case '2':
           e.preventDefault();
-          goToStep(firstStepOfScenario(2));
+          goToStep(firstStepOfScenario(2), true);
+          break;
+        case '3':
+          e.preventDefault();
+          window.open(buildWireframeDeepLink(onugWireframeUrl, currentStepData?.id), 'onug-wireframe');
           break;
         case 'n':
         case 'N':
@@ -302,9 +360,10 @@ export default function DemoStage() {
 
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [state.currentStep, goToStep]);
+  }, [state.currentStep, goToStep, currentStepData?.id, onugWireframeUrl]);
 
   const aomcActive = Object.values(state.aomcControls).some(Boolean);
+  const vendorLogoUrl = getVendorLogoUrl();
 
   return (
     <div className={`h-screen w-screen flex flex-col bg-gray-950 relative ${
@@ -313,9 +372,17 @@ export default function DemoStage() {
       {/* Header */}
       <header className="h-12 flex-shrink-0 flex items-center justify-between px-6 border-b border-gray-800/50 bg-gray-950">
         <div className="flex items-center gap-3">
-          <h1 className="text-sm font-bold text-cyan-400 tracking-wide">
-            ONUG Agentic AI Overlay
-          </h1>
+          {isVendorMode && vendorLogoUrl ? (
+            <img
+              src={vendorLogoUrl}
+              alt={getVendorName()}
+              className="h-6 w-auto"
+            />
+          ) : (
+            <h1 className="text-sm font-bold text-cyan-400 tracking-wide">
+              ONUG Agentic AI Overlay
+            </h1>
+          )}
           {state.scenario > 0 && (
             <span className={`text-xs font-bold px-2 py-0.5 rounded ${
               state.scenario === 1 ? 'bg-red-500/20 text-red-400' : 'bg-green-500/20 text-green-400'

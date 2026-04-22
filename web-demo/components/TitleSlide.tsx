@@ -41,15 +41,9 @@ export default function TitleSlide({ title, subtitle, scenario, contributors, vi
                   <img
                     src={getVendorLogoUrl()}
                     alt={getVendorName()}
-                    className="h-12 w-auto"
+                    className="h-14 w-auto"
                   />
                 )}
-                <span
-                  className="text-2xl font-bold"
-                  style={{ color: getVendorAccentColor() }}
-                >
-                  {getVendorName()}
-                </span>
               </motion.div>
             )}
 
