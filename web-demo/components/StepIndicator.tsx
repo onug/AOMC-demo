@@ -32,6 +32,8 @@ export default function StepIndicator({ currentStep, totalSteps, scenario, stepT
         <span>fullscreen</span>
         <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400 border border-gray-700">R</kbd>
         <span>reset</span>
+        <kbd className="px-1.5 py-0.5 bg-gray-800 rounded text-gray-400 border border-gray-700">3</kbd>
+        <span>open wireframe</span>
       </div>
 
       {/* Scenario label */}

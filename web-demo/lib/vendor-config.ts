@@ -8,8 +8,9 @@
  */
 
 import { VendorConfig } from './types';
+import onugGrokConfig from './vendor-config.onug-grok';
 
-const vendorConfig: VendorConfig | null = null;
+const vendorConfig: VendorConfig | null = onugGrokConfig;
 
 const _ciscoConfig: VendorConfig = {
   name: 'Cisco',
