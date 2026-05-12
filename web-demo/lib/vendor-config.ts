@@ -1,87 +1,105 @@
 /**
- * VENDOR CONFIG: Cisco HyperShield + Secure Workload
- *
- * To activate: copy this file's export over the one in vendor-config.ts
- *   cp vendor-config.cisco.ts vendor-config.ts
- *
- * Or just set vendorConfig in vendor-config.ts to this object.
+ * VENDOR CONFIG: NetFoundry Identity-First Connectivity for Agentic AI
  */
 
 import { VendorConfig } from './types';
 
-const vendorConfig: VendorConfig | null = null;
-
-const _ciscoConfig: VendorConfig = {
-  name: 'Cisco',
-  tagline: "If it's connected, it's protected.",
-  website: 'https://cisco.com/security',
-  // logoUrl: '/cisco-logo.png',  // place in web-demo/public/
-  accentColor: '#049fd9',  // Cisco blue
+const _netfoundryConfig: VendorConfig = {
+  name: 'NetFoundry',
+  tagline: 'Eliminate the Connectivity Tax with Identity-First Reachability',
+  website: 'https://netfoundry.io/netfoundry-ai/',
+  logoUrl: '/netfoundry-logo.png', // place in web-demo/public/
+  accentColor: '#173F8A',
 
   controls: {
     identity_attestation: {
-      productName: 'Cisco HyperShield',
-      introSubtitle: 'AI-native, hardware-rooted identity enforcement with Cisco HyperShield.\nAutonomous certificate validation at every mesh entry point.',
-      blockedSubtitle: 'HyperShield detected forged certificate — agent rejected and quarantined at mesh perimeter',
+      productName: 'NetFoundry',
+      introSubtitle:
+        'Cryptographic identity is enforced before connectivity.\nIf an agent cannot prove who it is, there is no path to connect.',
+      blockedSubtitle:
+        'NetFoundry rejected the rogue agent before dataplane creation — certificate mismatch and invalid identity binding',
       blockedEvents: [
-        'HyperShield: Certificate mismatch on agent-ROGUE-7749 — QUARANTINED at mesh entry',
-        'HyperShield: Cross-domain impersonation blocked — federation token invalid',
+        'NetFoundry: Certificate mismatch on agent-ROGUE-7749 — rejected and quarantined before any service path was created',
+        'NetFoundry: Cross-domain impersonation blocked — valid federated identity required',
       ],
     },
+
     runtime_monitoring: {
-      productName: 'Cisco HyperShield',
-      introSubtitle: 'Distributed behavioral analysis across every enforcement point.\nHyperShield detects anomalous agent patterns in real time.',
-      blockedSubtitle: 'HyperShield behavioral engine flagged anomaly score 94/100 — agent quarantined at T+8s',
+      productName: 'NetFoundry zLAN',
+      introSubtitle:
+        'Runtime monitoring and runtime containment via default-deny sandbox networking.\nzLAN enforces approved local and overlay paths, provides accepted/denied traffic visibility, and can surface failed non-Ziti access attempts to protected resources.',
+      enableTitle:
+        'NetFoundry ENABLED: Runtime Monitoring',
+     blockedSubtitle:
+        'zLAN enforced default-deny runtime containment — unauthorized traffic denied, restricted to approved local and overlay paths, and surfaced through centralized visibility',
       blockedEvents: [
-        'HyperShield: Anomaly score 94/100 — agent quarantined before data access',
+        'NetFoundry zLAN: Unauthorized runtime traffic denied by centralized sandbox policy',
+        'NetFoundry zLAN: Accepted and denied flows exposed in the centralized policy console',
+        'NetFoundry zLAN: Non-Ziti services or processes attempting protected access surfaced for alerting and analysis'
       ],
     },
+
     data_guardrails: {
-      productName: 'Cisco Secure Workload',
-      introSubtitle: 'Workload-level data classification and policy enforcement.\nSecure Workload prevents unauthorized data access at the source.',
-      blockedSubtitle: 'Secure Workload blocked PII access — agent not in authorized workload identity group',
+      productName: 'NetFoundry',
+      introSubtitle:
+        'Data Guardrails are augmented by default-deny reachability.\nNetFoundry does not replace DLP or prompt inspection; it reduces where those controls are needed by denying arbitrary data paths by default.',
+      enableTitle:
+        'NetFoundry AUGMENTS: Data Guardrails',
+      blockedSubtitle:
+        'Arbitrary data path denied — sensitive data can move only through approved, observable, and governable flows that require inspection or policy control',
       blockedEvents: [
-        'Secure Workload: PII access denied — agent-ROGUE-7749 not in authorized identity group',
+        'NetFoundry: Unauthorized data path denied by default — rogue agent has no arbitrary route to customer_database',
+        'NetFoundry: Sensitive data flow requires an approved identity-bound path to gateway, API, data service, or inspection service',
+        'NetFoundry: DLP, prompt inspection, output scanning, and data-governance controls can be focused on approved flows that require deeper intelligence',
       ],
     },
+
     zero_trust: {
-      productName: 'Cisco HyperShield',
-      introSubtitle: 'Autonomous segmentation across every network boundary.\nHyperShield enforces zero-trust at the fabric level — no implicit trust.',
-      blockedSubtitle: 'HyperShield blocked lateral movement — continuous verification failed at zone boundary',
+      productName: 'NetFoundry',
+      introSubtitle:
+        'Authorize before connect.\nNetFoundry replaces firewall/NAT/VLAN coordination with identity-defined service policy — no routable path exists unless policy creates one.',
+      blockedSubtitle:
+        'NetFoundry blocked lateral movement and cross-domain transfer — no explicit service policy exists',
       blockedEvents: [
-        'HyperShield: Lateral movement blocked — zone boundary re-verification failed',
-        'HyperShield: Cross-domain transfer denied — no policy for trusted\u2192untrusted',
+        'NetFoundry: Lateral movement denied — continuous verification required at zone boundary',
+        'NetFoundry: Cross-domain transfer denied — no policy path exists; no firewall/NAT exception required',
       ],
     },
+
     tool_authorization: {
-      productName: 'Cisco Secure Workload',
-      introSubtitle: 'Workload-aware tool authorization with Secure Workload.\nEvery tool invocation verified against workload identity and policy.',
-      blockedSubtitle: 'Secure Workload blocked all 4 tool invocations — agent not in declared permission scope',
+      productName: 'NetFoundry MCP Gateway',
+      introSubtitle:
+        'Tool access is governed by explicit identity-based policy.\nUnauthorized tools are outside declared permission scope and can be hidden from the agent entirely.',
+      blockedSubtitle:
+        'NetFoundry MCP Gateway blocked all 4 tool invocations — not in declared permission scope',
       blockedEvents: [
-        "Secure Workload: 'modify_firewall_rules' blocked — not in workload policy",
-        "Secure Workload: 'inject_bgp_routes' blocked — not in workload policy",
-        "Secure Workload: 'dump_auth_tokens' blocked — not in workload policy",
-        "Secure Workload: 'wipe_audit_logs' blocked — not in workload policy",
+        "NetFoundry MCP Gateway: 'modify_firewall_rules' blocked — not in declared permission scope",
+        "NetFoundry MCP Gateway: 'inject_bgp_routes' blocked — not in declared permission scope",
+        "NetFoundry MCP Gateway: 'dump_auth_tokens' blocked — not in declared permission scope",
+        "NetFoundry MCP Gateway: 'wipe_audit_logs' blocked — not in declared permission scope",
       ],
     },
+
     autonomy_governance: {
-      productName: 'Cisco HyperShield',
-      introSubtitle: 'Autonomous governance enforcement at every decision point.\nHyperShield requires human approval for high-risk agent actions.',
-      blockedSubtitle: 'HyperShield escalated all high-risk actions — human approval required before execution',
+      productName: 'NetFoundry LLM Gateway + NetFoundry MCP Gateway',
+      introSubtitle:
+        'High-risk autonomous actions require explicit approval.\nNetFoundry extends identity-first policy into governed agent and high-risk autonomy.',
+      blockedSubtitle:
+        'High-risk autonomous actions blocked — human approval required before execution',
       blockedEvents: [
-        "HyperShield: 'shutdown_auth_service' escalated — human approval required",
-        "HyperShield: 'disable_observability_stack' escalated — human approval required",
-        "HyperShield: 'broadcast_to_agent_mesh' escalated — human approval required",
-        "HyperShield: 'modify_identity_provider' escalated — human approval required",
+        "NetFoundry LLM Gateway: 'shutdown_auth_service' classified as high-risk — approval required",
+        "NetFoundry LLM Gateway: 'disable_observability_stack' classified as high-risk — approval required",
+        "NetFoundry LLM Gateway: 'broadcast_to_agent_mesh' classified as high-risk — approval required",
+        "NetFoundry MCP Gateway: 'modify_identity_provider' blocked pending human approval",
       ],
     },
   },
 
-  finaleSubtitle: 'Six mandatory requirements. Cisco HyperShield + Secure Workload.\nThe agentic enterprise, protected at every layer.',
+  finaleSubtitle:
+    'Replace the recurring connectivity tax with identity-defined, policy-mediated communication.\nNo ambient reachability. No exposed services. Zero-trust from network fabric to agentic governance.',
 };
 
-export default vendorConfig;
+const vendorConfig: VendorConfig | null = _netfoundryConfig;
 
-// To re-enable Cisco mode: change line 12 to:
-//   const vendorConfig: VendorConfig | null = _ciscoConfig;
-void _ciscoConfig;
+export default vendorConfig;
+void _netfoundryConfig;

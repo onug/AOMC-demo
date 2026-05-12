@@ -13,6 +13,19 @@ This demo makes the risk concrete:
 - **Scenario 1: The Catastrophic Cascade** — A rogue agent exploits six missing security controls. In under two minutes: 100,000 cardholder records exfiltrated, firewall rules destroyed, sessions hijacked, audit logs wiped. Estimated damage: **$500M+**.
 - **Scenario 2: The Layered Defense** — The same attack, same rogue agent. Now six AOMC controls are active. Every attack phase is detected, blocked, and audited. Zero damage.
 
+## NetFoundry submission
+
+NetFoundry has prepared a Scenario 2 submission that demonstrates how identity-first, default-deny connectivity can be used to secure agentic AI systems.
+
+The core idea is simple: agents, tools, APIs, services, and gateways should not be reachable merely because they are on the network. NetFoundry/OpenZiti applies **authorize-before-connect** access, making reachability identity-bound, policy-controlled, observable, and revocable at the service/session level.
+
+This turns Scenario 2 from a layered defense demo into a practical model for reducing both agentic AI risk and the operational “connectivity tax” created by firewall, VPN, NAT, routing, and security-group changes.
+
+Submission materials:
+
+- **NetFoundry Scenario 2 README:** https://drive.google.com/file/d/1L55jw97m4MHAd3DjX-GV7h3B7jq9KolE/view
+- **Video walkthrough:** https://drive.google.com/file/d/1U7CvpTR5bTtaGniwPm8LvTZtXCv-_RtC/view
+
 ## Why should I care?
 
 AI agents are already being exploited in production. The AI Incident Database catalogs 900+ incidents and growing — training data exfiltration, prompt injection across trust boundaries, autonomous trading losses in the nine figures, and backdoors injected via AI coding assistants.
