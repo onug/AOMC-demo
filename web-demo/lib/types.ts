@@ -108,6 +108,7 @@ export interface Step {
   phase: StepPhase;
   title: string;
   subtitle?: string;
+  narration?: string;
   events: EventEntry[];
   topologyChanges: TopologyChange[];
   aomcChanges?: { control: ControlKey; enabled: boolean }[];
