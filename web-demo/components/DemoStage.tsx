@@ -197,8 +197,7 @@ function reducer(state: DemoState, action: Action): DemoState {
 // ─── Component ──────────────────────────────────────────
 export default function DemoStage() {
   const [state, dispatch] = useReducer(reducer, 0, buildStateForStep);
-  const [narrationEnabled, setNarrationEnabled] = useState(true);
-  const [audioPlaying, setAudioPlaying] = useState(false);
+  const [narrationMuted, setNarrationMuted] = useState(false);
   const overlayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentStepData = STEPS[state.currentStep];
@@ -233,6 +232,17 @@ export default function DemoStage() {
   useEffect(() => {
     return () => stopAudio();
   }, []);
+
+  // Narration TTS
+  useEffect(() => {
+    const text = currentStepData?.narration;
+    if (narrationMuted || !text || typeof window === 'undefined' || !window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.95;
+    window.speechSynthesis.speak(utterance);
+    return () => { window.speechSynthesis.cancel(); };
+  }, [state.currentStep, currentStepData?.narration, narrationMuted]);
 
   // Auto-clear overlays after 3s
   useEffect(() => {
@@ -287,15 +297,10 @@ export default function DemoStage() {
         case 'n':
         case 'N':
           e.preventDefault();
-          setNarrationEnabled(prev => !prev);
-          stopAudio();
-          setAudioPlaying(false);
-          break;
-        case 's':
-        case 'S':
-          e.preventDefault();
-          stopAudio();
-          setAudioPlaying(false);
+          setNarrationMuted(v => {
+            if (!v) window.speechSynthesis?.cancel();
+            return !v;
+          });
           break;
       }
     }
@@ -325,21 +330,20 @@ export default function DemoStage() {
           )}
         </div>
         <div className="flex items-center gap-4">
-          {/* Narration toggle button */}
           <button
             onClick={() => {
-              setNarrationEnabled(prev => !prev);
-              stopAudio();
-              setAudioPlaying(false);
+              if (!narrationMuted) window.speechSynthesis?.cancel();
+              setNarrationMuted(v => !v);
             }}
-            className={`text-xs px-2 py-1 rounded transition-colors ${
-              narrationEnabled 
-                ? 'bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500/30' 
-                : 'bg-gray-700/50 text-gray-500 hover:bg-gray-700'
+            className={`flex items-center gap-1.5 text-xs px-2.5 py-1 rounded border transition-colors cursor-pointer ${
+              narrationMuted
+                ? 'border-gray-700 text-gray-600 hover:text-gray-400 hover:border-gray-600'
+                : 'border-cyan-800 text-cyan-500 hover:text-cyan-300 hover:border-cyan-600'
             }`}
-            title="Press N to toggle, S to stop audio"
+            title="Toggle narration (N)"
           >
-            {audioPlaying ? '🔊 Playing...' : narrationEnabled ? '🔊 Narration ON' : '🔇 Narration OFF'}
+            {narrationMuted ? '🔇' : '🔊'}
+            <span className="font-mono tracking-wide">{narrationMuted ? 'MUTED' : 'NARRATION'}</span>
           </button>
           <div className="text-xs font-[family-name:var(--font-mono)] text-gray-600">
             Step {state.currentStep + 1} / {STEPS.length}
@@ -349,7 +353,7 @@ export default function DemoStage() {
 
       {/* Title Slide — replaces dashboard content entirely */}
       {isTitle ? (
-        <div className="flex-1 flex items-center justify-center">
+        <div className="flex-1 flex items-center justify-center relative">
           <TitleSlide
             title={currentStepData?.title || ''}
             subtitle={currentStepData?.subtitle}
